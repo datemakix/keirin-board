@@ -1,0 +1,572 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1, user-scalable=no">
+<title>展開ボード｜競輪</title>
+<meta name="description" content="競輪の並び予想を、車番チップをドラッグ＆タップするだけで直感的に組み立てられる無料ツール。">
+<link rel="icon" type="image/jpeg" href="favicon.jpg">
+<style>
+:root{
+  --night: #0b1a1e;
+  --track: #7a3b2e;
+  --track-dark: #5c2c22;
+  --infield: #1f3b2c;
+  --infield-line: #2c5240;
+  --paper: #f2ead9;
+  --ink: #14201f;
+  --accent: #e0b84a;
+  --line-red: #e0483a;
+
+  --c1: #f7f4ec; --c1-ink:#14201f;
+  --c2: #1b1b1b; --c2-ink:#f2ead9;
+  --c3: #c8402c; --c3-ink:#fff;
+  --c4: #2a5c9e; --c4-ink:#fff;
+  --c5: #e7c23a; --c5-ink:#14201f;
+  --c6: #2f7d4f; --c6-ink:#fff;
+  --c7: #d9772a; --c7-ink:#fff;
+  --c8: #d4679a; --c8-ink:#fff;
+  --c9: #6a4c93; --c9-ink:#fff;
+}
+*{box-sizing:border-box; -webkit-tap-highlight-color: transparent;}
+html{ scroll-behavior: smooth; }
+html,body{
+  margin:0; padding:0;
+  background: var(--night);
+  font-family: "Hiragino Sans","Hiragino Kaku Gothic ProN","Yu Gothic",-apple-system,BlinkMacSystemFont,sans-serif;
+  color: var(--paper);
+  overscroll-behavior-y: contain;
+}
+
+/* ===== ヒーロー ===== */
+.siteHero{
+  padding: 64px 20px 44px;
+  background:
+    radial-gradient(120% 140% at 50% -10%, rgba(224,184,74,0.12), transparent 60%),
+    var(--night);
+  border-bottom: 1px solid rgba(242,234,217,0.12);
+}
+.siteHero-inner{ max-width: 640px; margin: 0 auto; text-align:center; }
+.siteHero .eyebrow{
+  font-family: "Courier New", monospace;
+  font-size: 11px; letter-spacing:.22em; font-weight:700;
+  color: var(--accent); margin:0 0 14px;
+}
+.siteHero h1{
+  margin: 0 0 16px; font-size: clamp(24px, 5vw, 36px); line-height:1.4;
+  font-weight: 800; letter-spacing:.01em; color: var(--paper);
+}
+.siteHero .hero-img{
+  display:block; margin: 0 auto 26px; width:100%; max-width: 340px; height:auto;
+  border-radius: 18px; border: 2px solid rgba(224,184,74,0.35);
+  box-shadow: 0 18px 40px rgba(0,0,0,0.45);
+}
+.siteHero .lead{
+  margin: 0 auto 30px; max-width: 480px; font-size: 14.5px; line-height:1.85;
+  color: rgba(242,234,217,0.72);
+}
+.siteHero .cta{
+  display:inline-block; padding: 13px 28px; border-radius:999px;
+  background: var(--accent); color: var(--night); font-weight:800; font-size:13.5px;
+  text-decoration:none; letter-spacing:.03em;
+  box-shadow: 0 4px 0 rgba(0,0,0,0.25);
+  transition: transform .12s ease;
+}
+.siteHero .cta:active{ transform: translateY(2px); }
+
+/* 写真判定線のような区切り */
+.finishLine{
+  height:1px; margin:0;
+  background: repeating-linear-gradient(90deg, rgba(242,234,217,0.45) 0 8px, transparent 8px 16px);
+}
+
+/* ===== 使い方ガイド ===== */
+.guide{ padding: 52px 20px 56px; background: var(--night); }
+.guide-inner{ max-width: 620px; margin:0 auto; }
+.guide h2{
+  font-size:19px; font-weight:800; color:var(--paper); margin:0 0 30px;
+  text-align:center; letter-spacing:.02em;
+}
+.guide .steps{ list-style:none; margin:0; padding:0; display:flex; flex-direction:column; gap:22px; }
+.guide .steps li{
+  display:flex; align-items:flex-start; gap:14px;
+  font-size:13.5px; line-height:1.8; color: rgba(242,234,217,0.8);
+}
+.guide .step-badge{
+  flex:none; width:30px; height:30px; border-radius:50%;
+  display:flex; align-items:center; justify-content:center;
+  font-weight:800; font-size:13px; margin-top:1px;
+  border: 2px solid rgba(255,255,255,0.3);
+}
+
+/* ===== ページフッター ===== */
+.siteFooter{
+  padding: 22px 20px 36px; text-align:center;
+  font-size:11px; color: rgba(242,234,217,0.4);
+  background: var(--night); border-top: 1px solid rgba(242,234,217,0.1);
+}
+
+/* ===== ここから既存のボード部分のスタイル ===== */
+.app{
+  display:flex; flex-direction:column;
+  height:100vh; height:100dvh;
+  width:100vw;
+}
+header.boardHeader{
+  padding: 14px 16px 10px;
+  display:flex; align-items:baseline; justify-content:space-between;
+  gap: 10px;
+  flex-wrap:wrap;
+  border-bottom: 1px solid rgba(242,234,217,0.12);
+  background: linear-gradient(180deg, rgba(0,0,0,0.25), transparent);
+}
+.title{
+  font-size: 19px; font-weight: 800; letter-spacing: .04em;
+  color: var(--paper);
+}
+.title small{
+  display:block; font-size:11px; font-weight:500; letter-spacing:.08em;
+  color: rgba(242,234,217,0.55); margin-top:2px;
+}
+.controls{ display:flex; gap:8px; flex-wrap:wrap; }
+button{
+  font-family:inherit; font-size:12.5px; font-weight:700;
+  padding:8px 12px; border-radius: 999px; border: 1px solid rgba(242,234,217,0.25);
+  background: rgba(242,234,217,0.06); color: var(--paper);
+  cursor:pointer; letter-spacing:.02em;
+  transition: background .15s ease, transform .1s ease, border-color .15s ease;
+}
+button:hover{ background: rgba(242,234,217,0.14); }
+button:active{ transform: scale(0.96); }
+button.primary{
+  background: var(--accent); color: #14201f; border-color: var(--accent);
+}
+button.primary:hover{ filter: brightness(1.06); }
+button.danger{ border-color: rgba(224,72,58,0.5); }
+button.danger:hover{ background: rgba(224,72,58,0.18); }
+.hint{
+  font-size: 11.5px; color: rgba(242,234,217,0.55); padding: 0 16px 8px;
+  line-height:1.5;
+}
+.hint b{ color: rgba(242,234,217,0.85); font-weight:700; }
+.field-wrap{
+  position: relative; flex:1; min-height: 0; margin: 0 10px 10px;
+  border-radius: 22px; overflow:hidden;
+  border: 1px solid rgba(242,234,217,0.15);
+  box-shadow: inset 0 0 60px rgba(0,0,0,0.35);
+}
+#field{
+  position:absolute; inset:0; width:100%; height:100%; touch-action:none;
+  background: var(--night);
+}
+#trackSvg{ position:absolute; inset:0; width:100%; height:100%; pointer-events:none; }
+#connSvg{ position:absolute; inset:0; width:100%; height:100%; pointer-events:none; z-index:5; }
+.zone-label{
+  position:absolute; font-size:10.5px; letter-spacing:.14em; font-weight:700;
+  color: rgba(242,234,217,0.4); pointer-events:none; text-transform:uppercase;
+}
+.chip{
+  position:absolute; z-index:10;
+  width: 52px; height:52px; margin-left:-26px; margin-top:-26px;
+  border-radius:50%;
+  display:flex; align-items:center; justify-content:center;
+  font-weight:800; font-size:19px;
+  box-shadow: 0 3px 0 rgba(0,0,0,0.35), 0 6px 14px rgba(0,0,0,0.4);
+  border: 2.5px solid rgba(255,255,255,0.35);
+  cursor: grab;
+  user-select:none; touch-action:none;
+  transition: box-shadow .12s ease, filter .12s ease;
+}
+.chip.dragging{
+  cursor:grabbing;
+  box-shadow: 0 8px 0 rgba(0,0,0,0.3), 0 16px 26px rgba(0,0,0,0.5);
+}
+.chip.selected{
+  outline: 3px solid var(--accent); outline-offset: 3px;
+}
+.chip .num{ line-height:1; }
+.chip .tick{
+  position:absolute; top:-3px; left:50%; transform:translateX(-50%);
+  width:0; height:0;
+  border-left: 6px solid transparent; border-right: 6px solid transparent;
+  border-bottom: 8px solid rgba(255,255,255,0.75);
+}
+.c1{ background:var(--c1); color:var(--c1-ink); }
+.c2{ background:var(--c2); color:var(--c2-ink); }
+.c3{ background:var(--c3); color:var(--c3-ink); }
+.c4{ background:var(--c4); color:var(--c4-ink); }
+.c5{ background:var(--c5); color:var(--c5-ink); }
+.c6{ background:var(--c6); color:var(--c6-ink); }
+.c7{ background:var(--c7); color:var(--c7-ink); }
+.c8{ background:var(--c8); color:var(--c8-ink); }
+.c9{ background:var(--c9); color:var(--c9-ink); }
+footer.boardFooter{
+  padding: 8px 16px 12px; display:flex; align-items:center; justify-content:space-between;
+  gap:10px; flex-wrap:wrap;
+  font-size:11px; color: rgba(242,234,217,0.4);
+}
+.legend{ display:flex; gap:4px; flex-wrap:wrap; align-items:center; }
+.legend span{
+  display:inline-flex; align-items:center; justify-content:center;
+  width:16px;height:16px;border-radius:50%; font-size:0;
+  border:1px solid rgba(255,255,255,0.3);
+}
+@media (max-width: 480px){
+  .siteHero{ padding:48px 18px 34px; }
+  .title{ font-size:16px; }
+  .chip{ width:38px; height:38px; margin-left:-19px; margin-top:-19px; font-size:14px; }
+  .hint{ font-size:10.5px; }
+}
+</style>
+</head>
+<body>
+
+<header class="siteHero">
+  <div class="siteHero-inner">
+    <p class="eyebrow">KEIRIN TENKAI BOARD</p>
+    <h1>指先ひとつで、ライン予想を組み立てる。</h1>
+    <p class="lead">車番チップを自由に動かし、2つをタップしてつなぐだけ。並びと脚質のイメージを、レース前にすっと整理できる無料ツールです。</p>
+    <a href="#board" class="cta">ボードを開く ↓</a>
+  </div>
+</header>
+
+<div class="finishLine"></div>
+
+<div class="app" id="board">
+<header class="boardHeader">
+  <div class="title">展開ボード<small>KEIRIN TENKAI BOARD</small></div>
+  <div class="controls">
+    <button id="btnConnect">🔗 ライン接続: OFF</button>
+    <button id="btnClearConn" class="danger">接続を全消去</button>
+    <button id="btnReset" class="primary">並びをリセット</button>
+  </div>
+</header>
+<div class="hint">
+  車番チップはどこへでも自由にドラッグできます。<b>「ライン接続」をONにして2つの車番を順にタップ</b>すると線でつながり、同じラインだと分かりやすくなります。もう一度同じ2つをタップすると解除されます。
+</div>
+<div class="field-wrap">
+  <div id="field">
+    <svg id="trackSvg" viewBox="0 0 1000 560" preserveAspectRatio="xMidYMid meet"></svg>
+    <svg id="connSvg" viewBox="0 0 1000 560" preserveAspectRatio="xMidYMid meet"></svg>
+    <div class="zone-label" id="lblHome" style="bottom:8%; left:50%; transform:translateX(-50%);">STRAIGHT</div>
+    <!-- chips injected by JS -->
+  </div>
+</div>
+<footer class="boardFooter">
+  <div class="legend" id="legend"></div>
+  <div>©だてまき</div>
+</footer>
+</div>
+
+<div class="finishLine"></div>
+
+<section class="guide">
+  <div class="guide-inner">
+    <h2>使い方</h2>
+    <ol class="steps">
+      <li><span class="step-badge c1">1</span><span>車番チップをドラッグして、実際の隊列に近い並びに動かします。</span></li>
+      <li><span class="step-badge c5">2</span><span>「ライン接続」をONにして、同じラインの車番を順にタップ。線でつながり、先頭・番手の関係が一目でわかります。</span></li>
+      <li><span class="step-badge c9">3</span><span>並びを組み直したいときは「並びをリセット」でいつでも初期配置に戻せます。</span></li>
+    </ol>
+  </div>
+</section>
+
+<footer class="siteFooter">
+  <p>展開ボード｜個人開発の非公式ツールです。予想の参考としてご自由にお使いください。</p>
+</footer>
+
+<script>
+(function(){
+  const NUMS = [1,2,3,4,5,6,7,8,9];
+  const field = document.getElementById('field');
+  const trackSvg = document.getElementById('trackSvg');
+  const connSvg = document.getElementById('connSvg');
+  const btnConnect = document.getElementById('btnConnect');
+  const btnClearConn = document.getElementById('btnClearConn');
+  const btnReset = document.getElementById('btnReset');
+  const legend = document.getElementById('legend');
+
+  // ---- draw velodrome track (stylized banked oval) ----
+  trackSvg.innerHTML = `
+    <rect x="0" y="0" width="1000" height="560" fill="#0b1a1e"/>
+    <!-- 走路（グレー）：帯全体の約80% -->
+    <rect x="0" y="60" width="1000" height="352" fill="#5b5c60"/>
+    <!-- 黄線 -->
+    <rect x="0" y="412" width="1000" height="8" fill="#e8c750"/>
+    <!-- 白線 -->
+    <rect x="0" y="420" width="1000" height="8" fill="#f4f1e8"/>
+    <!-- 赤帯（測線） -->
+    <rect x="0" y="428" width="1000" height="30" fill="#cd7b86"/>
+    <!-- 内側白線 -->
+    <rect x="0" y="458" width="1000" height="8" fill="#f4f1e8"/>
+    <!-- 内圏（フィールド側） -->
+    <rect x="0" y="466" width="1000" height="34" fill="#a8cf5a"/>
+    <!-- 距離表示線 -->
+    <line x1="200" y1="60" x2="200" y2="466" stroke="rgba(255,255,255,0.85)" stroke-width="3"/>
+  `;
+
+  // ---- keirin standard car-number colors ----
+  const COLORS = {1:'白',2:'黒',3:'赤',4:'青',5:'黄',6:'緑',7:'橙',8:'桃',9:'紫'};
+  NUMS.forEach(n=>{
+    const s = document.createElement('span');
+    s.className = 'c'+n;
+    s.title = n+'番 ('+COLORS[n]+')';
+    legend.appendChild(s);
+  });
+
+  // ---- state ----
+  const state = {}; // n -> {x,y} in track coords (viewBox 0-1000 x 0-560)
+  let connectMode = false;
+  let firstPicked = null;
+  const connections = new Set(); // "a-b" a<b（接続の有無の判定用）
+  const edgeDir = new Map(); // "a-b" -> {from, to}（タップした順＝ライン前後関係）
+
+  function fieldRect(){ return field.getBoundingClientRect(); }
+
+  // 縦横比(1000:560)を保ったまま中央に収まる、実際の走路の描画領域を返す
+  function trackRect(){
+    const r = fieldRect();
+    const scale = Math.min(r.width/1000, r.height/560);
+    const w = 1000*scale, h = 560*scale;
+    const x = (r.width - w)/2, y = (r.height - h)/2;
+    return { x, y, width:w, height:h, scale };
+  }
+
+  // 車番の位置は画面ピクセルではなく、コース座標(viewBox 0-1000 x 0-560)で保持する。
+  // こうすることで、拡大・縮小してもコース上の相対位置がずれない。
+  function toTrack(fx, fy){
+    const tr = trackRect();
+    return { x: (fx - tr.x) / tr.scale, y: (fy - tr.y) / tr.scale };
+  }
+  function toField(tx, ty){
+    const tr = trackRect();
+    return { x: tx * tr.scale + tr.x, y: ty * tr.scale + tr.y };
+  }
+
+  function defaultLayout(){
+    // コース座標系で固定配置（直線走路の中央あたりに横一列で並べる）
+    const startY = 236;
+    const gap = 100;
+    const totalW = gap*(NUMS.length-1);
+    const startX = 500 - totalW/2;
+    NUMS.forEach((n,i)=>{
+      state[n] = { x: startX + i*gap, y: startY };
+    });
+  }
+
+  function clamp(v,min,max){ return Math.max(min, Math.min(max, v)); }
+
+  function renderChips(){
+    field.querySelectorAll('.chip').forEach(el=>el.remove());
+    NUMS.forEach(n=>{
+      const el = document.createElement('div');
+      el.className = 'chip c'+n;
+      el.dataset.num = n;
+      el.innerHTML = '<div class="num">'+n+'</div>';
+      field.appendChild(el);
+      positionChip(n);
+      attachDrag(el, n);
+    });
+  }
+
+  function positionChip(n){
+    const el = field.querySelector('.chip[data-num="'+n+'"]');
+    if(!el) return;
+    const p = toField(state[n].x, state[n].y);
+    el.style.left = p.x + 'px';
+    el.style.top = p.y + 'px';
+  }
+
+  function drawConnections(){
+    let svg = '';
+    connections.forEach(pair=>{
+      const [a,b] = pair.split('-').map(Number);
+      const pa = state[a], pb = state[b];
+      if(!pa || !pb) return;
+      // state は既にコース座標(viewBox)なのでそのまま使える
+      svg += `<line x1="${pa.x}" y1="${pa.y}" x2="${pb.x}" y2="${pb.y}" stroke="#0b1a1e" stroke-width="7" stroke-linecap="round" opacity="0.9"/><line x1="${pa.x}" y1="${pa.y}" x2="${pb.x}" y2="${pb.y}" stroke="#3ecbff" stroke-width="4" stroke-linecap="round" opacity="0.95"/>`;
+    });
+    connSvg.innerHTML = svg;
+  }
+
+  function attachDrag(el, n){
+    let dragging = false;
+    let moved = false;
+    let offX=0, offY=0; // フィールドpx単位でのオフセット
+    let startClientX=0, startClientY=0;
+
+    el.addEventListener('pointerdown', (e)=>{
+      e.preventDefault();
+      dragging = true; moved = false;
+      el.setPointerCapture(e.pointerId);
+      el.classList.add('dragging');
+      el.style.zIndex = '999'; // ドラッグ中は常に最前面
+      startClientX = e.clientX; startClientY = e.clientY;
+      const r = fieldRect();
+      const p = toField(state[n].x, state[n].y);
+      offX = (e.clientX - r.left) - p.x;
+      offY = (e.clientY - r.top) - p.y;
+    });
+
+    el.addEventListener('pointermove', (e)=>{
+      if(!dragging) return;
+      // タッチは指のブレが大きいため、タップ/ドラッグ判定のしきい値を広めにとる
+      const threshold = e.pointerType === 'touch' ? 10 : 3;
+      if(Math.abs(e.clientX-startClientX) > threshold || Math.abs(e.clientY-startClientY) > threshold) moved = true;
+      const r = fieldRect();
+      let x = (e.clientX - r.left) - offX;
+      let y = (e.clientY - r.top) - offY;
+      x = clamp(x, 20, r.width-20);
+      y = clamp(y, 20, r.height-20);
+      state[n] = toTrack(x, y);
+      positionChip(n);
+      drawConnections();
+    });
+
+    function endDrag(e){
+      if(!dragging) return;
+      dragging = false;
+      el.classList.remove('dragging');
+      if(moved && !isInLine(n)){
+        freeZCounter++;
+        freeZ[n] = freeZCounter;
+      }
+      applyZOrder();
+      if(!moved){
+        handleTap(n, el);
+      }
+    }
+    el.addEventListener('pointerup', endDrag);
+    el.addEventListener('pointercancel', endDrag);
+  }
+
+  function isInLine(n){
+    for (const e of edgeDir.values()){
+      if(e.from===n || e.to===n) return true;
+    }
+    return false;
+  }
+
+  // ラインに入っていないチップを動かした時、手前に来るように使う個別のz-index
+  let freeZCounter = 200;
+  const freeZ = {};
+
+  function handleTap(n, el){
+    if(!connectMode) return;
+    if(firstPicked === null){
+      firstPicked = n;
+      el.classList.add('selected');
+    } else if(firstPicked === n){
+      el.classList.remove('selected');
+      firstPicked = null;
+    } else {
+      const a = Math.min(firstPicked, n), b = Math.max(firstPicked, n);
+      const key = a+'-'+b;
+      if(connections.has(key)){
+        connections.delete(key);
+        edgeDir.delete(key);
+      } else {
+        connections.add(key);
+        edgeDir.set(key, {from: firstPicked, to: n}); // タップした順=前(先頭)→後
+        // ラインに組み込まれたので、個別の最前面指定は解除してライン順に従わせる
+        delete freeZ[firstPicked];
+        delete freeZ[n];
+      }
+      field.querySelector('.chip[data-num="'+firstPicked+'"]').classList.remove('selected');
+      firstPicked = null;
+      drawConnections();
+      applyZOrder();
+    }
+  }
+
+  // ラインの先頭（他から接続されていない側）ほど手前(z-indexが高い)になるよう計算する
+  function computeZOrder(){
+    const incoming = {}, outAdj = {}, inLine = new Set();
+    NUMS.forEach(n=>{ incoming[n]=0; outAdj[n]=[]; });
+    edgeDir.forEach(e=>{
+      outAdj[e.from].push(e.to);
+      incoming[e.to] = (incoming[e.to]||0)+1;
+      inLine.add(e.from); inLine.add(e.to);
+    });
+
+    const z = {};
+    NUMS.forEach(n=> z[n] = 10); // ラインに属さないチップは既定値
+
+    const visited = new Set();
+    NUMS.forEach(n=>{
+      if(inLine.has(n) && incoming[n]===0 && !visited.has(n)){
+        let depth = 0, queue = [n];
+        while(queue.length){
+          const next = [];
+          queue.forEach(node=>{
+            if(visited.has(node)) return;
+            visited.add(node);
+            z[node] = 100 - depth; // 先頭が最も手前
+            (outAdj[node]||[]).forEach(c=> next.push(c));
+          });
+          queue = next; depth++;
+        }
+      }
+    });
+
+    // 循環などで訪問できなかったライン内ノードは中間値にしておく
+    inLine.forEach(n=>{ if(!visited.has(n)) z[n] = 50; });
+
+    // ラインに入っていないチップは、動かした履歴(freeZ)があればそれを優先（ライン全体より手前）
+    NUMS.forEach(n=>{
+      if(!inLine.has(n) && freeZ[n] !== undefined) z[n] = freeZ[n];
+    });
+
+    return z;
+  }
+
+  function applyZOrder(){
+    const z = computeZOrder();
+    NUMS.forEach(n=>{
+      const el = field.querySelector('.chip[data-num="'+n+'"]');
+      if(el) el.style.zIndex = z[n];
+    });
+  }
+
+  btnConnect.addEventListener('click', ()=>{
+    connectMode = !connectMode;
+    btnConnect.textContent = '🔗 ライン接続: ' + (connectMode ? 'ON' : 'OFF');
+    btnConnect.classList.toggle('primary', connectMode);
+    if(!connectMode && firstPicked !== null){
+      field.querySelector('.chip[data-num="'+firstPicked+'"]').classList.remove('selected');
+      firstPicked = null;
+    }
+  });
+
+  btnClearConn.addEventListener('click', ()=>{
+    connections.clear();
+    edgeDir.clear();
+    drawConnections();
+    applyZOrder();
+  });
+
+  btnReset.addEventListener('click', ()=>{
+    defaultLayout();
+    renderChips();
+    connections.clear();
+    edgeDir.clear();
+    Object.keys(freeZ).forEach(k=> delete freeZ[k]);
+    freeZCounter = 200;
+    drawConnections();
+    applyZOrder();
+  });
+
+  window.addEventListener('resize', ()=>{
+    NUMS.forEach(n=> positionChip(n));
+    drawConnections();
+  });
+
+  // init
+  defaultLayout();
+  renderChips();
+  drawConnections();
+  applyZOrder();
+})();
+</script>
+</body>
+</html>
