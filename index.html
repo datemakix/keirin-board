@@ -4,184 +4,270 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1, user-scalable=no">
 <title>展開ボード｜競輪</title>
+<meta name="description" content="競輪の並び予想を、車番チップをドラッグ＆タップするだけで直感的に組み立てられる無料ツール。">
 <style>
-  :root{
-    --night: #0b1a1e;
-    --track: #7a3b2e;
-    --track-dark: #5c2c22;
-    --infield: #1f3b2c;
-    --infield-line: #2c5240;
-    --paper: #f2ead9;
-    --ink: #14201f;
-    --accent: #e0b84a;
-    --line-red: #e0483a;
+:root{
+  --night: #0b1a1e;
+  --track: #7a3b2e;
+  --track-dark: #5c2c22;
+  --infield: #1f3b2c;
+  --infield-line: #2c5240;
+  --paper: #f2ead9;
+  --ink: #14201f;
+  --accent: #e0b84a;
+  --line-red: #e0483a;
 
-    --c1: #f7f4ec; --c1-ink:#14201f;
-    --c2: #1b1b1b; --c2-ink:#f2ead9;
-    --c3: #c8402c; --c3-ink:#fff;
-    --c4: #2a5c9e; --c4-ink:#fff;
-    --c5: #e7c23a; --c5-ink:#14201f;
-    --c6: #2f7d4f; --c6-ink:#fff;
-    --c7: #d9772a; --c7-ink:#fff;
-    --c8: #d4679a; --c8-ink:#fff;
-    --c9: #6a4c93; --c9-ink:#fff;
-  }
-  *{box-sizing:border-box; -webkit-tap-highlight-color: transparent;}
-  html,body{
-    margin:0; padding:0; height:100%;
-    background: var(--night);
-    font-family: "Hiragino Sans","Hiragino Kaku Gothic ProN","Yu Gothic",-apple-system,BlinkMacSystemFont,sans-serif;
-    color: var(--paper);
-    overflow:hidden;
-    overscroll-behavior:none;
-  }
-  .app{
-    display:flex; flex-direction:column;
-    height:100vh; height:100dvh;
-    width:100vw;
-  }
+  --c1: #f7f4ec; --c1-ink:#14201f;
+  --c2: #1b1b1b; --c2-ink:#f2ead9;
+  --c3: #c8402c; --c3-ink:#fff;
+  --c4: #2a5c9e; --c4-ink:#fff;
+  --c5: #e7c23a; --c5-ink:#14201f;
+  --c6: #2f7d4f; --c6-ink:#fff;
+  --c7: #d9772a; --c7-ink:#fff;
+  --c8: #d4679a; --c8-ink:#fff;
+  --c9: #6a4c93; --c9-ink:#fff;
+}
+*{box-sizing:border-box; -webkit-tap-highlight-color: transparent;}
+html{ scroll-behavior: smooth; }
+html,body{
+  margin:0; padding:0;
+  background: var(--night);
+  font-family: "Hiragino Sans","Hiragino Kaku Gothic ProN","Yu Gothic",-apple-system,BlinkMacSystemFont,sans-serif;
+  color: var(--paper);
+  overscroll-behavior-y: contain;
+}
 
-  header{
-    padding: 14px 16px 10px;
-    display:flex; align-items:baseline; justify-content:space-between;
-    gap: 10px;
-    flex-wrap:wrap;
-    border-bottom: 1px solid rgba(242,234,217,0.12);
-    background: linear-gradient(180deg, rgba(0,0,0,0.25), transparent);
-  }
-  .title{
-    font-size: 19px; font-weight: 800; letter-spacing: .04em;
-    color: var(--paper);
-  }
-  .title small{
-    display:block; font-size:11px; font-weight:500; letter-spacing:.08em;
-    color: rgba(242,234,217,0.55); margin-top:2px;
-  }
-  .controls{ display:flex; gap:8px; flex-wrap:wrap; }
-  button{
-    font-family:inherit; font-size:12.5px; font-weight:700;
-    padding:8px 12px; border-radius: 999px; border: 1px solid rgba(242,234,217,0.25);
-    background: rgba(242,234,217,0.06); color: var(--paper);
-    cursor:pointer; letter-spacing:.02em;
-    transition: background .15s ease, transform .1s ease, border-color .15s ease;
-  }
-  button:hover{ background: rgba(242,234,217,0.14); }
-  button:active{ transform: scale(0.96); }
-  button.primary{
-    background: var(--accent); color: #14201f; border-color: var(--accent);
-  }
-  button.primary:hover{ filter: brightness(1.06); }
-  button.danger{ border-color: rgba(224,72,58,0.5); }
-  button.danger:hover{ background: rgba(224,72,58,0.18); }
+/* ===== ヒーロー ===== */
+.siteHero{
+  padding: 64px 20px 44px;
+  background:
+    radial-gradient(120% 140% at 50% -10%, rgba(224,184,74,0.12), transparent 60%),
+    var(--night);
+  border-bottom: 1px solid rgba(242,234,217,0.12);
+}
+.siteHero-inner{ max-width: 640px; margin: 0 auto; text-align:center; }
+.siteHero .eyebrow{
+  font-family: "Courier New", monospace;
+  font-size: 11px; letter-spacing:.22em; font-weight:700;
+  color: var(--accent); margin:0 0 14px;
+}
+.siteHero h1{
+  margin: 0 0 16px; font-size: clamp(24px, 5vw, 36px); line-height:1.4;
+  font-weight: 800; letter-spacing:.01em; color: var(--paper);
+}
+.siteHero .lead{
+  margin: 0 auto 30px; max-width: 480px; font-size: 14.5px; line-height:1.85;
+  color: rgba(242,234,217,0.72);
+}
+.siteHero .cta{
+  display:inline-block; padding: 13px 28px; border-radius:999px;
+  background: var(--accent); color: var(--night); font-weight:800; font-size:13.5px;
+  text-decoration:none; letter-spacing:.03em;
+  box-shadow: 0 4px 0 rgba(0,0,0,0.25);
+  transition: transform .12s ease;
+}
+.siteHero .cta:active{ transform: translateY(2px); }
 
-  .hint{
-    font-size: 11.5px; color: rgba(242,234,217,0.55); padding: 0 16px 8px;
-    line-height:1.5;
-  }
-  .hint b{ color: rgba(242,234,217,0.85); font-weight:700; }
+/* 写真判定線のような区切り */
+.finishLine{
+  height:1px; margin:0;
+  background: repeating-linear-gradient(90deg, rgba(242,234,217,0.45) 0 8px, transparent 8px 16px);
+}
 
-  .field-wrap{
-    position: relative; flex:1; min-height: 0; margin: 0 10px 10px;
-    border-radius: 22px; overflow:hidden;
-    border: 1px solid rgba(242,234,217,0.15);
-    box-shadow: inset 0 0 60px rgba(0,0,0,0.35);
-  }
-  #field{
-    position:absolute; inset:0; width:100%; height:100%; touch-action:none;
-    background: var(--night);
-  }
-  #trackSvg{ position:absolute; inset:0; width:100%; height:100%; pointer-events:none; }
-  #connSvg{ position:absolute; inset:0; width:100%; height:100%; pointer-events:none; z-index:5; }
+/* ===== 使い方ガイド ===== */
+.guide{ padding: 52px 20px 56px; background: var(--night); }
+.guide-inner{ max-width: 620px; margin:0 auto; }
+.guide h2{
+  font-size:19px; font-weight:800; color:var(--paper); margin:0 0 30px;
+  text-align:center; letter-spacing:.02em;
+}
+.guide .steps{ list-style:none; margin:0; padding:0; display:flex; flex-direction:column; gap:22px; }
+.guide .steps li{
+  display:flex; align-items:flex-start; gap:14px;
+  font-size:13.5px; line-height:1.8; color: rgba(242,234,217,0.8);
+}
+.guide .step-badge{
+  flex:none; width:30px; height:30px; border-radius:50%;
+  display:flex; align-items:center; justify-content:center;
+  font-weight:800; font-size:13px; margin-top:1px;
+  border: 2px solid rgba(255,255,255,0.3);
+}
 
-  .zone-label{
-    position:absolute; font-size:10.5px; letter-spacing:.14em; font-weight:700;
-    color: rgba(242,234,217,0.4); pointer-events:none; text-transform:uppercase;
-  }
+/* ===== ページフッター ===== */
+.siteFooter{
+  padding: 22px 20px 36px; text-align:center;
+  font-size:11px; color: rgba(242,234,217,0.4);
+  background: var(--night); border-top: 1px solid rgba(242,234,217,0.1);
+}
 
-  .chip{
-    position:absolute; z-index:10;
-    width: 52px; height:52px; margin-left:-26px; margin-top:-26px;
-    border-radius:50%;
-    display:flex; align-items:center; justify-content:center;
-    font-weight:800; font-size:19px;
-    box-shadow: 0 3px 0 rgba(0,0,0,0.35), 0 6px 14px rgba(0,0,0,0.4);
-    border: 2.5px solid rgba(255,255,255,0.35);
-    cursor: grab;
-    user-select:none; touch-action:none;
-    transition: box-shadow .12s ease, filter .12s ease;
-  }
-  .chip.dragging{
-    cursor:grabbing;
-    box-shadow: 0 8px 0 rgba(0,0,0,0.3), 0 16px 26px rgba(0,0,0,0.5);
-  }
-  .chip.selected{
-    outline: 3px solid var(--accent); outline-offset: 3px;
-  }
-  .chip .num{ line-height:1; }
-  .chip .tick{
-    position:absolute; top:-3px; left:50%; transform:translateX(-50%);
-    width:0; height:0;
-    border-left: 6px solid transparent; border-right: 6px solid transparent;
-    border-bottom: 8px solid rgba(255,255,255,0.75);
-  }
-
-  .c1{ background:var(--c1); color:var(--c1-ink); }
-  .c2{ background:var(--c2); color:var(--c2-ink); }
-  .c3{ background:var(--c3); color:var(--c3-ink); }
-  .c4{ background:var(--c4); color:var(--c4-ink); }
-  .c5{ background:var(--c5); color:var(--c5-ink); }
-  .c6{ background:var(--c6); color:var(--c6-ink); }
-  .c7{ background:var(--c7); color:var(--c7-ink); }
-  .c8{ background:var(--c8); color:var(--c8-ink); }
-  .c9{ background:var(--c9); color:var(--c9-ink); }
-
-  footer{
-    padding: 8px 16px 12px; display:flex; align-items:center; justify-content:space-between;
-    gap:10px; flex-wrap:wrap;
-    font-size:11px; color: rgba(242,234,217,0.4);
-  }
-  .legend{ display:flex; gap:4px; flex-wrap:wrap; align-items:center; }
-  .legend span{
-    display:inline-flex; align-items:center; justify-content:center;
-    width:16px;height:16px;border-radius:50%; font-size:0;
-    border:1px solid rgba(255,255,255,0.3);
-  }
-
-  @media (max-width: 480px){
-    .title{ font-size:16px; }
-    .chip{ width:38px; height:38px; margin-left:-19px; margin-top:-19px; font-size:14px; }
-    .hint{ font-size:10.5px; }
-  }
+/* ===== ここから既存のボード部分のスタイル ===== */
+.app{
+  display:flex; flex-direction:column;
+  height:100vh; height:100dvh;
+  width:100vw;
+}
+header.boardHeader{
+  padding: 14px 16px 10px;
+  display:flex; align-items:baseline; justify-content:space-between;
+  gap: 10px;
+  flex-wrap:wrap;
+  border-bottom: 1px solid rgba(242,234,217,0.12);
+  background: linear-gradient(180deg, rgba(0,0,0,0.25), transparent);
+}
+.title{
+  font-size: 19px; font-weight: 800; letter-spacing: .04em;
+  color: var(--paper);
+}
+.title small{
+  display:block; font-size:11px; font-weight:500; letter-spacing:.08em;
+  color: rgba(242,234,217,0.55); margin-top:2px;
+}
+.controls{ display:flex; gap:8px; flex-wrap:wrap; }
+button{
+  font-family:inherit; font-size:12.5px; font-weight:700;
+  padding:8px 12px; border-radius: 999px; border: 1px solid rgba(242,234,217,0.25);
+  background: rgba(242,234,217,0.06); color: var(--paper);
+  cursor:pointer; letter-spacing:.02em;
+  transition: background .15s ease, transform .1s ease, border-color .15s ease;
+}
+button:hover{ background: rgba(242,234,217,0.14); }
+button:active{ transform: scale(0.96); }
+button.primary{
+  background: var(--accent); color: #14201f; border-color: var(--accent);
+}
+button.primary:hover{ filter: brightness(1.06); }
+button.danger{ border-color: rgba(224,72,58,0.5); }
+button.danger:hover{ background: rgba(224,72,58,0.18); }
+.hint{
+  font-size: 11.5px; color: rgba(242,234,217,0.55); padding: 0 16px 8px;
+  line-height:1.5;
+}
+.hint b{ color: rgba(242,234,217,0.85); font-weight:700; }
+.field-wrap{
+  position: relative; flex:1; min-height: 0; margin: 0 10px 10px;
+  border-radius: 22px; overflow:hidden;
+  border: 1px solid rgba(242,234,217,0.15);
+  box-shadow: inset 0 0 60px rgba(0,0,0,0.35);
+}
+#field{
+  position:absolute; inset:0; width:100%; height:100%; touch-action:none;
+  background: var(--night);
+}
+#trackSvg{ position:absolute; inset:0; width:100%; height:100%; pointer-events:none; }
+#connSvg{ position:absolute; inset:0; width:100%; height:100%; pointer-events:none; z-index:5; }
+.zone-label{
+  position:absolute; font-size:10.5px; letter-spacing:.14em; font-weight:700;
+  color: rgba(242,234,217,0.4); pointer-events:none; text-transform:uppercase;
+}
+.chip{
+  position:absolute; z-index:10;
+  width: 52px; height:52px; margin-left:-26px; margin-top:-26px;
+  border-radius:50%;
+  display:flex; align-items:center; justify-content:center;
+  font-weight:800; font-size:19px;
+  box-shadow: 0 3px 0 rgba(0,0,0,0.35), 0 6px 14px rgba(0,0,0,0.4);
+  border: 2.5px solid rgba(255,255,255,0.35);
+  cursor: grab;
+  user-select:none; touch-action:none;
+  transition: box-shadow .12s ease, filter .12s ease;
+}
+.chip.dragging{
+  cursor:grabbing;
+  box-shadow: 0 8px 0 rgba(0,0,0,0.3), 0 16px 26px rgba(0,0,0,0.5);
+}
+.chip.selected{
+  outline: 3px solid var(--accent); outline-offset: 3px;
+}
+.chip .num{ line-height:1; }
+.chip .tick{
+  position:absolute; top:-3px; left:50%; transform:translateX(-50%);
+  width:0; height:0;
+  border-left: 6px solid transparent; border-right: 6px solid transparent;
+  border-bottom: 8px solid rgba(255,255,255,0.75);
+}
+.c1{ background:var(--c1); color:var(--c1-ink); }
+.c2{ background:var(--c2); color:var(--c2-ink); }
+.c3{ background:var(--c3); color:var(--c3-ink); }
+.c4{ background:var(--c4); color:var(--c4-ink); }
+.c5{ background:var(--c5); color:var(--c5-ink); }
+.c6{ background:var(--c6); color:var(--c6-ink); }
+.c7{ background:var(--c7); color:var(--c7-ink); }
+.c8{ background:var(--c8); color:var(--c8-ink); }
+.c9{ background:var(--c9); color:var(--c9-ink); }
+footer.boardFooter{
+  padding: 8px 16px 12px; display:flex; align-items:center; justify-content:space-between;
+  gap:10px; flex-wrap:wrap;
+  font-size:11px; color: rgba(242,234,217,0.4);
+}
+.legend{ display:flex; gap:4px; flex-wrap:wrap; align-items:center; }
+.legend span{
+  display:inline-flex; align-items:center; justify-content:center;
+  width:16px;height:16px;border-radius:50%; font-size:0;
+  border:1px solid rgba(255,255,255,0.3);
+}
+@media (max-width: 480px){
+  .siteHero{ padding:48px 18px 34px; }
+  .title{ font-size:16px; }
+  .chip{ width:38px; height:38px; margin-left:-19px; margin-top:-19px; font-size:14px; }
+  .hint{ font-size:10.5px; }
+}
 </style>
 </head>
 <body>
-<div class="app">
-  <header>
-    <div class="title">展開ボード<small>KEIRIN　TENKAI　BOARD</small></div>
-    <div class="controls">
-      <button id="btnConnect">🔗 ライン接続: OFF</button>
-      <button id="btnClearConn" class="danger">接続を全消去</button>
-      <button id="btnReset" class="primary">並びをリセット</button>
-    </div>
-  </header>
-  <div class="hint">
-    車番チップはどこへでも自由にドラッグできます。<b>「ライン接続」をONにして2つの車番を順にタップ</b>すると線でつながり、同じラインだと分かりやすくなります。もう一度同じ2つをタップすると解除されます。
-  </div>
 
-  <div class="field-wrap">
-    <div id="field">
-      <svg id="trackSvg" viewBox="0 0 1000 560" preserveAspectRatio="xMidYMid meet"></svg>
-      <svg id="connSvg" viewBox="0 0 1000 560" preserveAspectRatio="xMidYMid meet"></svg>
-      <div class="zone-label" id="lblHome" style="bottom:8%; left:50%; transform:translateX(-50%);">STRAIGHT</div>
-      <!-- chips injected by JS -->
-    </div>
+<header class="siteHero">
+  <div class="siteHero-inner">
+    <p class="eyebrow">KEIRIN TENKAI BOARD</p>
+    <h1>指先ひとつで、ライン予想を組み立てる。</h1>
+    <p class="lead">車番チップを自由に動かし、2つをタップしてつなぐだけ。並びと脚質のイメージを、レース前にすっと整理できる無料ツールです。</p>
+    <a href="#board" class="cta">ボードを開く ↓</a>
   </div>
+</header>
 
-  <footer>
-    <div class="legend" id="legend"></div>
-    <div>©だてまき</div>
-  </footer>
+<div class="finishLine"></div>
+
+<div class="app" id="board">
+<header class="boardHeader">
+  <div class="title">展開ボード<small>KEIRIN TENKAI BOARD</small></div>
+  <div class="controls">
+    <button id="btnConnect">🔗 ライン接続: OFF</button>
+    <button id="btnClearConn" class="danger">接続を全消去</button>
+    <button id="btnReset" class="primary">並びをリセット</button>
+  </div>
+</header>
+<div class="hint">
+  車番チップはどこへでも自由にドラッグできます。<b>「ライン接続」をONにして2つの車番を順にタップ</b>すると線でつながり、同じラインだと分かりやすくなります。もう一度同じ2つをタップすると解除されます。
 </div>
+<div class="field-wrap">
+  <div id="field">
+    <svg id="trackSvg" viewBox="0 0 1000 560" preserveAspectRatio="xMidYMid meet"></svg>
+    <svg id="connSvg" viewBox="0 0 1000 560" preserveAspectRatio="xMidYMid meet"></svg>
+    <div class="zone-label" id="lblHome" style="bottom:8%; left:50%; transform:translateX(-50%);">STRAIGHT</div>
+    <!-- chips injected by JS -->
+  </div>
+</div>
+<footer class="boardFooter">
+  <div class="legend" id="legend"></div>
+  <div>©だてまき</div>
+</footer>
+</div>
+
+<div class="finishLine"></div>
+
+<section class="guide">
+  <div class="guide-inner">
+    <h2>使い方</h2>
+    <ol class="steps">
+      <li><span class="step-badge c1">1</span><span>車番チップをドラッグして、実際の隊列に近い並びに動かします。</span></li>
+      <li><span class="step-badge c5">2</span><span>「ライン接続」をONにして、同じラインの車番を順にタップ。線でつながり、先頭・番手の関係が一目でわかります。</span></li>
+      <li><span class="step-badge c9">3</span><span>並びを組み直したいときは「並びをリセット」でいつでも初期配置に戻せます。</span></li>
+    </ol>
+  </div>
+</section>
+
+<footer class="siteFooter">
+  <p>展開ボード｜個人開発の非公式ツールです。予想の参考としてご自由にお使いください。</p>
+</footer>
 
 <script>
 (function(){
@@ -396,8 +482,10 @@
       incoming[e.to] = (incoming[e.to]||0)+1;
       inLine.add(e.from); inLine.add(e.to);
     });
+
     const z = {};
     NUMS.forEach(n=> z[n] = 10); // ラインに属さないチップは既定値
+
     const visited = new Set();
     NUMS.forEach(n=>{
       if(inLine.has(n) && incoming[n]===0 && !visited.has(n)){
@@ -414,12 +502,15 @@
         }
       }
     });
+
     // 循環などで訪問できなかったライン内ノードは中間値にしておく
     inLine.forEach(n=>{ if(!visited.has(n)) z[n] = 50; });
+
     // ラインに入っていないチップは、動かした履歴(freeZ)があればそれを優先（ライン全体より手前）
     NUMS.forEach(n=>{
       if(!inLine.has(n) && freeZ[n] !== undefined) z[n] = freeZ[n];
     });
+
     return z;
   }
 
