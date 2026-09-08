@@ -6,6 +6,7 @@
 <title>展開ボード｜競輪</title>
 <meta name="description" content="競輪の並び予想を、車番チップをドラッグ＆タップするだけで直感的に組み立てられる無料ツール。">
 <link rel="icon" type="image/jpeg" href="favicon.jpg">
+<link rel="apple-touch-icon" href="favicon.jpg">
 <style>
 :root{
   --night: #0b1a1e;
@@ -247,7 +248,7 @@ footer.boardFooter{
 </div>
 <footer class="boardFooter">
   <div class="controls">
-    <button id="btnConnect">🔗 ライン接続: OFF</button>
+    <button id="btnConnect" class="primary">🔗 ライン接続: ON</button>
     <button id="btnClearConn" class="danger">接続を全消去</button>
     <button id="btnReset" class="primary">並びをリセット</button>
   </div>
@@ -363,7 +364,7 @@ footer.boardFooter{
 
   // ---- state ----
   const state = {}; // n -> {x,y} in track coords (viewBox 0-1000 x 0-710)
-  let connectMode = false;
+  let connectMode = true;
   let firstPicked = null;
   const connections = new Set(); // "a-b" a<b（接続の有無の判定用）
   const edgeDir = new Map(); // "a-b" -> {from, to}（タップした順＝ライン前後関係）
