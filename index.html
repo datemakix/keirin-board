@@ -114,9 +114,6 @@ html,body{
 }
 header.boardHeader{
   padding: 14px 16px 10px;
-  display:flex; align-items:baseline; justify-content:space-between;
-  gap: 10px;
-  flex-wrap:wrap;
   border-bottom: 1px solid rgba(242,234,217,0.12);
   background: linear-gradient(180deg, rgba(0,0,0,0.25), transparent);
 }
@@ -201,9 +198,12 @@ button.danger:hover{ background: rgba(224,72,58,0.18); }
 .c8{ background:var(--c8); color:var(--c8-ink); }
 .c9{ background:var(--c9); color:var(--c9-ink); }
 footer.boardFooter{
-  padding: 8px 16px 12px; display:flex; align-items:center; justify-content:space-between;
-  gap:10px; flex-wrap:wrap;
+  padding: 10px 16px 12px; display:flex; flex-direction:column; gap:10px;
   font-size:11px; color: rgba(242,234,217,0.4);
+}
+.footerBottom{
+  display:flex; align-items:center; justify-content:space-between;
+  gap:10px; flex-wrap:wrap;
 }
 .legend{ display:flex; gap:4px; flex-wrap:wrap; align-items:center; }
 .legend span{
@@ -234,11 +234,6 @@ footer.boardFooter{
 <div class="app" id="board">
 <header class="boardHeader">
   <div class="title">展開ボード<small>KEIRIN TENKAI BOARD</small></div>
-  <div class="controls">
-    <button id="btnConnect">🔗 ライン接続: OFF</button>
-    <button id="btnClearConn" class="danger">接続を全消去</button>
-    <button id="btnReset" class="primary">並びをリセット</button>
-  </div>
 </header>
 <div class="hint">
   車番チップはどこへでも自由にドラッグできます。<b>「ライン接続」をONにして2つの車番を順にタップ</b>すると線でつながり、同じラインだと分かりやすくなります。もう一度同じ2つをタップすると解除されます。
@@ -247,13 +242,19 @@ footer.boardFooter{
   <div id="field">
     <svg id="trackSvg" preserveAspectRatio="xMidYMid meet"></svg>
     <svg id="connSvg" preserveAspectRatio="xMidYMid meet"></svg>
-    <div class="zone-label" id="lblHome" style="bottom:4%; left:50%; transform:translateX(-50%);">HOME STRAIGHT</div>
     <!-- chips injected by JS -->
   </div>
 </div>
 <footer class="boardFooter">
-  <div class="legend" id="legend"></div>
-  <div>©だてまき</div>
+  <div class="controls">
+    <button id="btnConnect">🔗 ライン接続: OFF</button>
+    <button id="btnClearConn" class="danger">接続を全消去</button>
+    <button id="btnReset" class="primary">並びをリセット</button>
+  </div>
+  <div class="footerBottom">
+    <div class="legend" id="legend"></div>
+    <div>©だてまき</div>
+  </div>
 </footer>
 </div>
 
@@ -291,12 +292,6 @@ footer.boardFooter{
   const TRACK_H = ISMOBILE ? 560 : 710;
   trackSvg.setAttribute('viewBox', `0 0 1000 ${TRACK_H}`);
   connSvg.setAttribute('viewBox', `0 0 1000 ${TRACK_H}`);
-
-  const lblHome = document.getElementById('lblHome');
-  if(ISMOBILE){
-    lblHome.textContent = 'STRAIGHT';
-    lblHome.style.bottom = '8%';
-  }
 
   if(ISMOBILE){
     // ---- draw straight track（以前のストレートのみのシンプル版）----
