@@ -680,11 +680,20 @@ footer.boardFooter{
       edgeDir.forEach(e=>{
         const leader = state[e.from], follower = state[e.to];
         if(!leader || !follower) return;
-        const dx = leader.x - follower.x, dy = leader.y - follower.y;
-        const dist = Math.hypot(dx, dy) || 0.0001;
-        if(dist > gap + 0.05){
-          const tx = leader.x - (dx/dist)*gap;
-          const ty = leader.y - (dy/dist)*gap;
+        let tx, ty;
+        if(ISMOBILE){
+          // スマホ版：先頭が上下に動いても、常に先頭の右横（3時方向）に一定間隔で並ぶ
+          tx = leader.x + gap;
+          ty = leader.y;
+        } else {
+          // PC版：先頭との距離を保ちながら、線をたどるように追従する
+          const dx = leader.x - follower.x, dy = leader.y - follower.y;
+          const dist = Math.hypot(dx, dy) || 0.0001;
+          tx = leader.x - (dx/dist)*gap;
+          ty = leader.y - (dy/dist)*gap;
+        }
+        const distToTarget = Math.hypot(tx-follower.x, ty-follower.y);
+        if(distToTarget > 0.05){
           follower.x += (tx - follower.x) * CHASE_EASE;
           follower.y += (ty - follower.y) * CHASE_EASE;
           positionChip(e.to);
