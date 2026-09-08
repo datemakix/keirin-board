@@ -245,8 +245,8 @@ footer.boardFooter{
 </div>
 <div class="field-wrap">
   <div id="field">
-    <svg id="trackSvg" viewBox="0 0 1000 710" preserveAspectRatio="xMidYMid meet"></svg>
-    <svg id="connSvg" viewBox="0 0 1000 710" preserveAspectRatio="xMidYMid meet"></svg>
+    <svg id="trackSvg" preserveAspectRatio="xMidYMid meet"></svg>
+    <svg id="connSvg" preserveAspectRatio="xMidYMid meet"></svg>
     <div class="zone-label" id="lblHome" style="bottom:4%; left:50%; transform:translateX(-50%);">HOME STRAIGHT</div>
     <!-- chips injected by JS -->
   </div>
@@ -285,6 +285,39 @@ footer.boardFooter{
   const btnReset = document.getElementById('btnReset');
   const legend = document.getElementById('legend');
 
+  // ---- PC / スマホの判定（幅480px以下はスマホ扱い）----
+  // スマホ：以前の「ストレートのみ」の見た目 / PC：現行の競輪場オーバルコース
+  const ISMOBILE = window.matchMedia('(max-width: 480px)').matches;
+  const TRACK_H = ISMOBILE ? 560 : 710;
+  trackSvg.setAttribute('viewBox', `0 0 1000 ${TRACK_H}`);
+  connSvg.setAttribute('viewBox', `0 0 1000 ${TRACK_H}`);
+
+  const lblHome = document.getElementById('lblHome');
+  if(ISMOBILE){
+    lblHome.textContent = 'STRAIGHT';
+    lblHome.style.bottom = '8%';
+  }
+
+  if(ISMOBILE){
+    // ---- draw straight track（以前のストレートのみのシンプル版）----
+    trackSvg.innerHTML = `
+      <rect x="0" y="0" width="1000" height="560" fill="#0b1a1e"/>
+      <!-- 走路（グレー）：帯全体の約80% -->
+      <rect x="0" y="60" width="1000" height="352" fill="#5b5c60"/>
+      <!-- 黄線 -->
+      <rect x="0" y="412" width="1000" height="8" fill="#e8c750"/>
+      <!-- 白線 -->
+      <rect x="0" y="420" width="1000" height="8" fill="#f4f1e8"/>
+      <!-- 赤帯（測線） -->
+      <rect x="0" y="428" width="1000" height="30" fill="#cd7b86"/>
+      <!-- 内側白線 -->
+      <rect x="0" y="458" width="1000" height="8" fill="#f4f1e8"/>
+      <!-- 内圏（フィールド側） -->
+      <rect x="0" y="466" width="1000" height="34" fill="#a8cf5a"/>
+      <!-- 距離表示線 -->
+      <line x1="200" y1="60" x2="200" y2="466" stroke="rgba(255,255,255,0.85)" stroke-width="3"/>
+    `;
+  } else {
   // ---- draw oval velodrome track（バンク付きオーバルコース）----
   // 上部(y:0-150)はチップの待機ゾーン。y:150以降にオーバルコースを描画する。
   // rx = height/2 の角丸長方形を入れ子にすることで、スタジアム型（直線＋半円）の走路になる。
@@ -322,6 +355,7 @@ footer.boardFooter{
     <circle cx="500" cy="430" r="26" fill="rgba(11,26,30,0.35)" stroke="rgba(242,234,217,0.35)" stroke-width="2"/>
     <text x="500" y="436" text-anchor="middle" font-size="16" font-weight="800" fill="rgba(242,234,217,0.55)" font-family="'Hiragino Sans','Yu Gothic',sans-serif">競輪</text>
   `;
+  }
 
   // ---- keirin standard car-number colors ----
   const COLORS = {1:'白',2:'黒',3:'赤',4:'青',5:'黄',6:'緑',7:'橙',8:'桃',9:'紫'};
@@ -341,16 +375,16 @@ footer.boardFooter{
 
   function fieldRect(){ return field.getBoundingClientRect(); }
 
-  // 縦横比(1000:710)を保ったまま中央に収まる、実際の走路の描画領域を返す
+  // 縦横比(1000:TRACK_H)を保ったまま中央に収まる、実際の走路の描画領域を返す
   function trackRect(){
     const r = fieldRect();
-    const scale = Math.min(r.width/1000, r.height/710);
-    const w = 1000*scale, h = 710*scale;
+    const scale = Math.min(r.width/1000, r.height/TRACK_H);
+    const w = 1000*scale, h = TRACK_H*scale;
     const x = (r.width - w)/2, y = (r.height - h)/2;
     return { x, y, width:w, height:h, scale };
   }
 
-  // 車番の位置は画面ピクセルではなく、コース座標(viewBox 0-1000 x 0-710)で保持する。
+  // 車番の位置は画面ピクセルではなく、コース座標(viewBox 0-1000 x 0-TRACK_H)で保持する。
   // こうすることで、拡大・縮小してもコース上の相対位置がずれない。
   function toTrack(fx, fy){
     const tr = trackRect();
@@ -362,9 +396,11 @@ footer.boardFooter{
   }
 
   function defaultLayout(){
-    // コース座標系で固定配置（コース上部の待機ゾーンに横一列で並べる）
-    const startY = 78;
-    const gap = 92;
+    // コース座標系で固定配置
+    // スマホ（ストレート版）：直線走路の中央あたりに横一列
+    // PC（オーバル版）：コース上部の待機ゾーンに横一列
+    const startY = ISMOBILE ? 236 : 78;
+    const gap = ISMOBILE ? 100 : 92;
     const totalW = gap*(NUMS.length-1);
     const startX = 500 - totalW/2;
     NUMS.forEach((n,i)=>{
