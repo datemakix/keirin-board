@@ -615,22 +615,36 @@ footer.boardFooter{
     applyZOrder();
   });
 
+  let resizeTimer = null;
   window.addEventListener('resize', ()=>{
-    NUMS.forEach(n=> positionChip(n));
-    drawConnections();
+    // スマホはスクロール時にアドレスバーの出し入れでresizeが連発し、
+    // その都度再計算するとカクつくため、少し落ち着いてから1回だけ再計算する。
+    clearTimeout(resizeTimer);
+    resizeTimer = setTimeout(()=>{
+      NUMS.forEach(n=> positionChip(n));
+      drawConnections();
+    }, 150);
   });
 
   // ---- ライン追従アニメーション ----
   // 「ライン接続」がONの間、先頭のチップを動かすと後ろのチップが
   // チップ1/3程度の間隔を保ちながら、少し遅れてぬるっと追いかけてくる。
   // OFFにすると、この追従は行われなくなる（それぞれ独立して動く）。
-  const CHASE_GAP_PX = 56;   // 保ちたい間隔（チップ1個分＋その1/3の距離）
-  const CHASE_EASE = 0.16;   // 追いつく速さ（小さいほど、より“ぬるっと”遅れてついてくる）
+  const CHASE_GAP_RATIO = 4/3; // 保ちたい間隔（チップ1個分＋その1/3の距離）＝チップサイズの4/3倍
+  const CHASE_EASE = 0.16;     // 追いつく速さ（小さいほど、より“ぬるっと”遅れてついてくる）
+
+  // 実際に描画されているチップのサイズ(px)を取得する（PC/スマホでサイズが違うため）
+  function getChipSizePx(){
+    const el = field.querySelector('.chip');
+    return el ? el.getBoundingClientRect().width : 42;
+  }
 
   function stepChase(){
     if(connectMode && edgeDir.size){
       const tr = trackRect();
-      const gap = tr.scale ? CHASE_GAP_PX / tr.scale : CHASE_GAP_PX;
+      const chipPx = getChipSizePx();
+      const gapPx = chipPx * CHASE_GAP_RATIO;
+      const gap = tr.scale ? gapPx / tr.scale : gapPx;
       let moved = false;
       edgeDir.forEach(e=>{
         const leader = state[e.from], follower = state[e.to];
