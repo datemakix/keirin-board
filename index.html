@@ -290,28 +290,28 @@ footer.boardFooter{
   // ---- PC / スマホの判定（幅480px以下はスマホ扱い）----
   // スマホ：以前の「ストレートのみ」の見た目 / PC：現行の競輪場オーバルコース
   const ISMOBILE = window.matchMedia('(max-width: 480px)').matches;
-  const TRACK_H = ISMOBILE ? 560 : 710;
+  const TRACK_H = ISMOBILE ? 500 : 710;
   trackSvg.setAttribute('viewBox', `0 0 1000 ${TRACK_H}`);
   connSvg.setAttribute('viewBox', `0 0 1000 ${TRACK_H}`);
 
   if(ISMOBILE){
-    // ---- draw straight track（以前のストレートのみのシンプル版）----
+    // ---- draw straight track（以前のストレートのみのシンプル版・上下の余白を半分に詰めた版）----
     trackSvg.innerHTML = `
-      <rect x="0" y="0" width="1000" height="560" fill="#0b1a1e"/>
-      <!-- 走路（グレー）：帯全体の約80% -->
-      <rect x="0" y="60" width="1000" height="352" fill="#5b5c60"/>
+      <rect x="0" y="0" width="1000" height="500" fill="#0b1a1e"/>
+      <!-- 走路（グレー） -->
+      <rect x="0" y="30" width="1000" height="352" fill="#5b5c60"/>
       <!-- 黄線 -->
-      <rect x="0" y="412" width="1000" height="8" fill="#e8c750"/>
+      <rect x="0" y="382" width="1000" height="8" fill="#e8c750"/>
       <!-- 白線 -->
-      <rect x="0" y="420" width="1000" height="8" fill="#f4f1e8"/>
+      <rect x="0" y="390" width="1000" height="8" fill="#f4f1e8"/>
       <!-- 赤帯（測線） -->
-      <rect x="0" y="428" width="1000" height="30" fill="#cd7b86"/>
+      <rect x="0" y="398" width="1000" height="30" fill="#cd7b86"/>
       <!-- 内側白線 -->
-      <rect x="0" y="458" width="1000" height="8" fill="#f4f1e8"/>
+      <rect x="0" y="428" width="1000" height="8" fill="#f4f1e8"/>
       <!-- 内圏（フィールド側） -->
-      <rect x="0" y="466" width="1000" height="34" fill="#a8cf5a"/>
+      <rect x="0" y="436" width="1000" height="34" fill="#a8cf5a"/>
       <!-- 距離表示線 -->
-      <line x1="200" y1="60" x2="200" y2="466" stroke="rgba(255,255,255,0.85)" stroke-width="3"/>
+      <line x1="200" y1="30" x2="200" y2="436" stroke="rgba(255,255,255,0.85)" stroke-width="3"/>
     `;
   } else {
   // ---- draw oval velodrome track（バンク付きオーバルコース）----
@@ -391,7 +391,7 @@ footer.boardFooter{
     // コース座標系で固定配置
     // スマホ（ストレート版）：直線走路の中央あたりに横一列
     // PC（オーバル版）：コース上部の待機ゾーンに横一列
-    const startY = ISMOBILE ? 236 : 78;
+    const startY = ISMOBILE ? 206 : 78;
     const gap = ISMOBILE ? 100 : 92;
     const totalW = gap*(NUMS.length-1);
     const startX = 500 - totalW/2;
@@ -615,9 +615,9 @@ footer.boardFooter{
 
   // ---- ライン追従アニメーション ----
   // 「ライン接続」がONの間、先頭のチップを動かすと後ろのチップが
-  // チップ1/3程度の間隔を保ちながら、少し遅れてぬるっと追いかけてくる。
+  // 一定の間隔を保ちながら、少し遅れてぬるっと追いかけてくる。
   // OFFにすると、この追従は行われなくなる（それぞれ独立して動く）。
-  const CHASE_GAP_RATIO = 4/3; // 保ちたい間隔（チップ1個分＋その1/3の距離）＝チップサイズの4/3倍
+  const CHASE_GAP_RATIO = ISMOBILE ? 5/4 : 4/3; // スマホ：チップ1個分＋1/4／PC：チップ1個分＋1/3
   const CHASE_EASE = 0.16;     // 追いつく速さ（小さいほど、より“ぬるっと”遅れてついてくる）
 
   // 実際に描画されているチップのサイズ(px)を取得する（PC/スマホでサイズが違うため）
