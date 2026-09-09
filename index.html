@@ -468,27 +468,8 @@ footer.boardFooter{
       let y = (e.clientY - r.top) - offY;
       x = clamp(x, 20, r.width-20);
       y = clamp(y, 20, r.height-20);
-      const prevPos = state[n];
-      const nextPos = toTrack(x, y);
-      state[n] = nextPos;
+      state[n] = toTrack(x, y);
       positionChip(n);
-
-      // ライン接続がONの場合、コース中心を基準に回転方向を判定する。
-      // 反時計回り（前に進む方向）→ 何もしない（下のstepChaseがぬるっと追従させる）
-      // 時計回り（後ろに下げる方向）→ 後ろに繋がっているチップもまとめて同じ分だけスライドさせる
-      if(connectMode){
-        const cx = 500, cy = 430;
-        const ux = prevPos.x - cx, uy = prevPos.y - cy;
-        const vx = nextPos.x - cx, vy = nextPos.y - cy;
-        const cross = ux*vy - uy*vx; // >0: 時計回り（画面上）, <0: 反時計回り（画面上）
-        if(cross > 0){
-          const dx = nextPos.x - prevPos.x, dy = nextPos.y - prevPos.y;
-          getDownstreamChain(n).forEach(m=>{
-            state[m] = { x: state[m].x + dx, y: state[m].y + dy };
-            positionChip(m);
-          });
-        }
-      }
       drawConnections();
     });
 
@@ -507,28 +488,6 @@ footer.boardFooter{
     }
     el.addEventListener('pointerup', endDrag);
     el.addEventListener('pointercancel', endDrag);
-  }
-
-  // n から出ているライン（矢印の先）を辿り、後ろに繋がっているチップ番号を全て返す
-  function getDownstreamChain(n){
-    const outAdj = {};
-    edgeDir.forEach(e=>{
-      (outAdj[e.from] = outAdj[e.from] || []).push(e.to);
-    });
-    const result = [];
-    const visited = new Set([n]);
-    let queue = outAdj[n] ? outAdj[n].slice() : [];
-    while(queue.length){
-      const next = [];
-      queue.forEach(node=>{
-        if(visited.has(node)) return;
-        visited.add(node);
-        result.push(node);
-        (outAdj[node] || []).forEach(c=> next.push(c));
-      });
-      queue = next;
-    }
-    return result;
   }
 
   function isInLine(n){
@@ -687,11 +646,26 @@ footer.boardFooter{
           tx = leader.x + gap;
           ty = leader.y;
         } else {
-          // PC版：先頭との距離を保ちながら、線をたどるように追従する
-          const dx = leader.x - follower.x, dy = leader.y - follower.y;
-          const dist = Math.hypot(dx, dy) || 0.0001;
-          tx = leader.x - (dx/dist)*gap;
-          ty = leader.y - (dy/dist)*gap;
+          // PC版：直線部分（バックストレート／ホームストレート）と
+          // コーナー部分（1-2コーナー／3-4コーナー）で追従の仕方を分ける
+          const OVAL_CENTER_Y = 430;
+          const STRAIGHT_X_MIN = 280, STRAIGHT_X_MAX = 720; // この範囲外はコーナー扱い
+          const inCorner = leader.x < STRAIGHT_X_MIN || leader.x > STRAIGHT_X_MAX;
+          if(inCorner){
+            // コーナー：以前と同じ、線をたどるように追いかける“蛇”のような動き
+            const dx = leader.x - follower.x, dy = leader.y - follower.y;
+            const dist = Math.hypot(dx, dy) || 0.0001;
+            tx = leader.x - (dx/dist)*gap;
+            ty = leader.y - (dy/dist)*gap;
+          } else if(leader.y < OVAL_CENTER_Y){
+            // バックストレート：先頭の3時方向（右）
+            tx = leader.x + gap;
+            ty = leader.y;
+          } else {
+            // ホームストレート：先頭の9時方向（左）
+            tx = leader.x - gap;
+            ty = leader.y;
+          }
         }
         const distToTarget = Math.hypot(tx-follower.x, ty-follower.y);
         if(distToTarget > 0.05){
