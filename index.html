@@ -295,12 +295,15 @@ footer.boardFooter{
   function computeIsMobile(){
     return window.matchMedia('(max-width: 480px)').matches;
   }
-  const ISMOBILE = computeIsMobile();
-  const TRACK_H = ISMOBILE ? 500 : 710;
-  trackSvg.setAttribute('viewBox', `0 0 1000 ${TRACK_H}`);
-  connSvg.setAttribute('viewBox', `0 0 1000 ${TRACK_H}`);
+  let ISMOBILE = computeIsMobile();
+  let TRACK_H = ISMOBILE ? 500 : 710;
 
-  if(ISMOBILE){
+  function drawTrack(){
+    TRACK_H = ISMOBILE ? 500 : 710;
+    trackSvg.setAttribute('viewBox', `0 0 1000 ${TRACK_H}`);
+    connSvg.setAttribute('viewBox', `0 0 1000 ${TRACK_H}`);
+
+    if(ISMOBILE){
     // ---- draw straight track（以前のストレートのみのシンプル版・上下の余白を半分に詰めた版）----
     trackSvg.innerHTML = `
       <rect x="0" y="0" width="1000" height="500" fill="#0b1a1e"/>
@@ -354,6 +357,8 @@ footer.boardFooter{
     <line x1="620" y1="538" x2="620" y2="690" stroke="rgba(255,255,255,0.85)" stroke-width="3"/>
   `;
   }
+  }
+  drawTrack();
 
   // ---- keirin standard car-number colors ----
   const COLORS = {1:'白',2:'黒',3:'赤',4:'青',5:'黄',6:'緑',7:'橙',8:'桃',9:'紫'};
@@ -626,15 +631,24 @@ footer.boardFooter{
     // その都度再計算するとカクつくため、少し落ち着いてから1回だけ再計算する。
     clearTimeout(resizeTimer);
     resizeTimer = setTimeout(()=>{
-      // 画面の向きが変わってPC/スマホの判定自体が変わった場合（例：スマホを横向きにした）は、
-      // オーバル/ストレートでコースの構造ごと違うため、ページを再読み込みして正しい方に切り替える。
-      if(computeIsMobile() !== ISMOBILE){
-        location.reload();
-        return;
+      const r = fieldRect();
+      if(r.width < 10 || r.height < 10) return; // レイアウト計算中の一瞬0になる瞬間は無視する
+
+      const nowMobile = computeIsMobile();
+      if(nowMobile !== ISMOBILE){
+        // 画面の向きが変わってPC/スマホの判定自体が変わった場合（例：スマホを横向きにした）は、
+        // オーバル/ストレートでコースの構造ごと違うため、その場で描き直して切り替える。
+        ISMOBILE = nowMobile;
+        drawTrack();
+        connections.clear();
+        edgeDir.clear();
+        defaultLayout();
+        renderChips();
       }
       updateFieldSvgs();
       NUMS.forEach(n=> positionChip(n));
       drawConnections();
+      applyZOrder();
     }, 150);
   });
 
@@ -642,7 +656,9 @@ footer.boardFooter{
   // 「ライン接続」がONの間、先頭のチップを動かすと後ろのチップが
   // 一定の間隔を保ちながら、少し遅れてぬるっと追いかけてくる。
   // OFFにすると、この追従は行われなくなる（それぞれ独立して動く）。
-  const CHASE_GAP_RATIO = ISMOBILE ? 5/4 : 4/3; // スマホ：チップ1個分＋1/4／PC：チップ1個分＋1/3
+  function chaseGapRatio(){
+    return ISMOBILE ? 5/4 : 4/3; // スマホ：チップ1個分＋1/4／PC：チップ1個分＋1/3
+  }
   const CHASE_EASE = 0.16;     // 追いつく速さ（小さいほど、より“ぬるっと”遅れてついてくる）
 
   // 実際に描画されているチップのサイズ(px)を取得する（PC/スマホでサイズが違うため）
@@ -655,7 +671,7 @@ footer.boardFooter{
     if(connectMode && edgeDir.size){
       const tr = trackRect();
       const chipPx = getChipSizePx();
-      const gapPx = chipPx * CHASE_GAP_RATIO;
+      const gapPx = chipPx * chaseGapRatio();
       const gap = tr.scale ? gapPx / tr.scale : gapPx;
       let moved = false;
       edgeDir.forEach(e=>{
