@@ -221,6 +221,18 @@ footer.boardFooter{
   .app{ height:auto; }
   .field-wrap{ flex:none; aspect-ratio: 1000 / 500; }
 }
+/* 横画面（高さが低い）：見出しやヒント文、ボタンの余白を切り詰めて、
+   コース表示エリア（field-wrap）に縦のスペースを最大限に譲る */
+@media (orientation: landscape) and (max-height: 520px){
+  .siteHero{ display:none; } /* 横画面ではヒーロー部分ごと非表示にして、コースにすぐアクセスできるようにする */
+  header.boardHeader{ padding:6px 12px 4px; }
+  .title{ font-size:14px; }
+  .title small{ font-size:9px; margin-top:0; }
+  .hint{ display:none; }
+  .field-wrap{ margin:0 8px 6px; }
+  footer.boardFooter{ padding:6px 12px 8px; gap:6px; }
+  footer.boardFooter button{ padding:6px 10px; font-size:11px; }
+}
 </style>
 </head>
 <body>
@@ -625,32 +637,40 @@ footer.boardFooter{
     applyZOrder();
   });
 
-  let resizeTimer = null;
-  window.addEventListener('resize', ()=>{
-    // スマホはスクロール時にアドレスバーの出し入れでresizeが連発し、
-    // その都度再計算するとカクつくため、少し落ち着いてから1回だけ再計算する。
-    clearTimeout(resizeTimer);
-    resizeTimer = setTimeout(()=>{
+  let pendingModeSwitchCheck = true; // 次のサイズ確定時にPC/スマホ判定も見直すフラグ
+  window.addEventListener('resize', ()=>{ pendingModeSwitchCheck = true; });
+
+  let roTimer = null;
+  const fieldResizeObserver = new ResizeObserver(()=>{
+    // 表示エリア(field-wrap)の実際の大きさが確定するたびに呼ばれる。
+    // 画面回転中などレイアウトが何度も変化する間は連続で呼ばれるため、
+    // 少し間隔が空いて呼び出しが落ち着いてから、最後の（＝確定した）サイズで1回だけ再計算する。
+    clearTimeout(roTimer);
+    roTimer = setTimeout(()=>{
       const r = fieldRect();
       if(r.width < 10 || r.height < 10) return; // レイアウト計算中の一瞬0になる瞬間は無視する
 
-      const nowMobile = computeIsMobile();
-      if(nowMobile !== ISMOBILE){
-        // 画面の向きが変わってPC/スマホの判定自体が変わった場合（例：スマホを横向きにした）は、
-        // オーバル/ストレートでコースの構造ごと違うため、その場で描き直して切り替える。
-        ISMOBILE = nowMobile;
-        drawTrack();
-        connections.clear();
-        edgeDir.clear();
-        defaultLayout();
-        renderChips();
+      if(pendingModeSwitchCheck){
+        pendingModeSwitchCheck = false;
+        const nowMobile = computeIsMobile();
+        if(nowMobile !== ISMOBILE){
+          // 画面の向きが変わってPC/スマホの判定自体が変わった場合（例：スマホを横向きにした）は、
+          // オーバル/ストレートでコースの構造ごと違うため、その場で描き直して切り替える。
+          ISMOBILE = nowMobile;
+          drawTrack();
+          connections.clear();
+          edgeDir.clear();
+          defaultLayout();
+          renderChips();
+        }
       }
       updateFieldSvgs();
       NUMS.forEach(n=> positionChip(n));
       drawConnections();
       applyZOrder();
-    }, 150);
+    }, 120);
   });
+  fieldResizeObserver.observe(field);
 
   // ---- ライン追従アニメーション ----
   // 「ライン接続」がONの間、先頭のチップを動かすと後ろのチップが
