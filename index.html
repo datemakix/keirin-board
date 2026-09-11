@@ -157,8 +157,8 @@ button.danger:hover{ background: rgba(224,72,58,0.18); }
   position:absolute; inset:0; width:100%; height:100%; touch-action:none;
   background: var(--night);
 }
-#trackSvg{ position:absolute; inset:0; width:100%; height:100%; pointer-events:none; }
-#connSvg{ position:absolute; inset:0; width:100%; height:100%; pointer-events:none; z-index:5; }
+#trackSvg{ position:absolute; pointer-events:none; }
+#connSvg{ position:absolute; pointer-events:none; z-index:5; }
 .zone-label{
   position:absolute; font-size:10.5px; letter-spacing:.14em; font-weight:700;
   color: rgba(242,234,217,0.4); pointer-events:none; text-transform:uppercase;
@@ -217,6 +217,9 @@ footer.boardFooter{
   .title{ font-size:16px; }
   .chip{ width:30px; height:30px; margin-left:-15px; margin-top:-15px; font-size:12px; border-radius:6px; }
   .hint{ font-size:10.5px; }
+  /* スマホは1画面固定にせず、コースの縦横比ぴったりの高さにして黒い余白（レターボックス）をなくす */
+  .app{ height:auto; }
+  .field-wrap{ flex:none; aspect-ratio: 1000 / 500; }
 }
 </style>
 </head>
@@ -370,10 +373,23 @@ footer.boardFooter{
   // 縦横比(1000:TRACK_H)を保ったまま中央に収まる、実際の走路の描画領域を返す
   function trackRect(){
     const r = fieldRect();
-    const scale = Math.min(r.width/1000, r.height/TRACK_H);
+    const zoom = ISMOBILE ? 1 : 1.2; // PC版オーバルコースは1.2倍ズームして大きく見せる
+    const scale = Math.min(r.width/1000, r.height/TRACK_H) * zoom;
     const w = 1000*scale, h = TRACK_H*scale;
     const x = (r.width - w)/2, y = (r.height - h)/2;
     return { x, y, width:w, height:h, scale };
+  }
+
+  // トラックSVGを、チップと全く同じ座標計算(trackRect)で配置・サイズ指定する。
+  // こうすることで、ズームしてもSVGの見た目とチップの位置が必ず一致する。
+  function updateFieldSvgs(){
+    const tr = trackRect();
+    [trackSvg, connSvg].forEach(svg=>{
+      svg.style.left = tr.x + 'px';
+      svg.style.top = tr.y + 'px';
+      svg.style.width = tr.width + 'px';
+      svg.style.height = tr.height + 'px';
+    });
   }
 
   // 車番の位置は画面ピクセルではなく、コース座標(viewBox 0-1000 x 0-TRACK_H)で保持する。
@@ -608,6 +624,7 @@ footer.boardFooter{
     // その都度再計算するとカクつくため、少し落ち着いてから1回だけ再計算する。
     clearTimeout(resizeTimer);
     resizeTimer = setTimeout(()=>{
+      updateFieldSvgs();
       NUMS.forEach(n=> positionChip(n));
       drawConnections();
     }, 150);
@@ -677,6 +694,7 @@ footer.boardFooter{
   }
 
   // init
+  updateFieldSvgs();
   defaultLayout();
   renderChips();
   drawConnections();
