@@ -373,8 +373,7 @@ footer.boardFooter{
   // 縦横比(1000:TRACK_H)を保ったまま中央に収まる、実際の走路の描画領域を返す
   function trackRect(){
     const r = fieldRect();
-    const zoom = ISMOBILE ? 1 : 1.2; // PC版オーバルコースは1.2倍ズームして大きく見せる
-    const scale = Math.min(r.width/1000, r.height/TRACK_H) * zoom;
+    const scale = Math.min(r.width/1000, r.height/TRACK_H);
     const w = 1000*scale, h = TRACK_H*scale;
     const x = (r.width - w)/2, y = (r.height - h)/2;
     return { x, y, width:w, height:h, scale };
