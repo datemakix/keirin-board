@@ -292,7 +292,10 @@ footer.boardFooter{
 
   // ---- PC / スマホの判定（幅480px以下はスマホ扱い）----
   // スマホ：以前の「ストレートのみ」の見た目 / PC：現行の競輪場オーバルコース
-  const ISMOBILE = window.matchMedia('(max-width: 480px)').matches;
+  function computeIsMobile(){
+    return window.matchMedia('(max-width: 480px)').matches;
+  }
+  const ISMOBILE = computeIsMobile();
   const TRACK_H = ISMOBILE ? 500 : 710;
   trackSvg.setAttribute('viewBox', `0 0 1000 ${TRACK_H}`);
   connSvg.setAttribute('viewBox', `0 0 1000 ${TRACK_H}`);
@@ -623,6 +626,12 @@ footer.boardFooter{
     // その都度再計算するとカクつくため、少し落ち着いてから1回だけ再計算する。
     clearTimeout(resizeTimer);
     resizeTimer = setTimeout(()=>{
+      // 画面の向きが変わってPC/スマホの判定自体が変わった場合（例：スマホを横向きにした）は、
+      // オーバル/ストレートでコースの構造ごと違うため、ページを再読み込みして正しい方に切り替える。
+      if(computeIsMobile() !== ISMOBILE){
+        location.reload();
+        return;
+      }
       updateFieldSvgs();
       NUMS.forEach(n=> positionChip(n));
       drawConnections();
