@@ -113,19 +113,6 @@ html,body{
   height:100vh; height:100dvh;
   width:100vw;
 }
-header.boardHeader{
-  padding: 14px 16px 10px;
-  border-bottom: 1px solid rgba(242,234,217,0.12);
-  background: linear-gradient(180deg, rgba(0,0,0,0.25), transparent);
-}
-.title{
-  font-size: 19px; font-weight: 800; letter-spacing: .04em;
-  color: var(--paper);
-}
-.title small{
-  display:block; font-size:11px; font-weight:500; letter-spacing:.08em;
-  color: rgba(242,234,217,0.55); margin-top:2px;
-}
 .controls{ display:flex; gap:8px; flex-wrap:wrap; }
 button{
   font-family:inherit; font-size:12.5px; font-weight:700;
@@ -142,11 +129,6 @@ button.primary{
 button.primary:hover{ filter: brightness(1.06); }
 button.danger{ border-color: rgba(224,72,58,0.5); }
 button.danger:hover{ background: rgba(224,72,58,0.18); }
-.hint{
-  font-size: 11.5px; color: rgba(242,234,217,0.55); padding: 0 16px 8px;
-  line-height:1.5;
-}
-.hint b{ color: rgba(242,234,217,0.85); font-weight:700; }
 .field-wrap{
   position: relative; flex:1; min-height: 0; margin: 0 10px 10px;
   border-radius: 22px; overflow:hidden;
@@ -214,24 +196,10 @@ footer.boardFooter{
 }
 @media (max-width: 480px){
   .siteHero{ padding:48px 18px 34px; }
-  .title{ font-size:16px; }
   .chip{ width:30px; height:30px; margin-left:-15px; margin-top:-15px; font-size:12px; border-radius:6px; }
-  .hint{ font-size:10.5px; }
   /* スマホは1画面固定にせず、コースの縦横比ぴったりの高さにして黒い余白（レターボックス）をなくす */
   .app{ height:auto; }
   .field-wrap{ flex:none; aspect-ratio: 1000 / 500; }
-}
-/* 横画面（高さが低い）：見出しやヒント文、ボタンの余白を切り詰めて、
-   コース表示エリア（field-wrap）に縦のスペースを最大限に譲る */
-@media (orientation: landscape) and (max-height: 520px){
-  .siteHero{ display:none; } /* 横画面ではヒーロー部分ごと非表示にして、コースにすぐアクセスできるようにする */
-  header.boardHeader{ padding:6px 12px 4px; }
-  .title{ font-size:14px; }
-  .title small{ font-size:9px; margin-top:0; }
-  .hint{ display:none; }
-  .field-wrap{ margin:0 8px 6px; }
-  footer.boardFooter{ padding:6px 12px 8px; gap:6px; }
-  footer.boardFooter button{ padding:6px 10px; font-size:11px; }
 }
 </style>
 </head>
@@ -239,21 +207,14 @@ footer.boardFooter{
 
 <header class="siteHero">
   <div class="siteHero-inner">
-    <p class="eyebrow">KEIRIN TENKAI BOARD</p>
-    <h1>競輪展開ボード</h1>
-    <p class="lead">車番チップを自由に動かし、2つをタップしてつなぐだけ。並びと脚質のイメージを、レース前にすっと整理できる無料ツールです。</p>
+    <h1>KEIRIN BOARD</h1>
+    <p class="lead">車番を動かして、展開を組み立てる。</p>
   </div>
 </header>
 
 <div class="finishLine"></div>
 
 <div class="app" id="board">
-<header class="boardHeader">
-  <div class="title">展開ボード<small>KEIRIN TENKAI BOARD</small></div>
-</header>
-<div class="hint">
-  車番チップはどこへでも自由にドラッグできます。<b>「ライン接続」をONにして2つの車番を順にタップ</b>すると線でつながり、同じラインだと分かりやすくなります。もう一度同じ2つをタップすると解除されます。
-</div>
 <div class="field-wrap">
   <div id="field">
     <svg id="trackSvg" preserveAspectRatio="xMidYMid meet"></svg>
