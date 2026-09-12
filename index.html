@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1, user-scalable=no">
-<title>TENKAI BOARD</title>
+<title>展開ボード｜競輪</title>
 <meta name="description" content="競輪の並び予想を、車番チップをドラッグ＆タップするだけで直感的に組み立てられる無料ツール。">
 <link rel="icon" type="image/jpeg" href="favicon.jpg">
 <link rel="apple-touch-icon" href="favicon.jpg">
@@ -207,7 +207,7 @@ footer.boardFooter{
 
 <header class="siteHero">
   <div class="siteHero-inner">
-    <h1>TENKAI BOARD</h1>
+    <h1>KEIRIN BOARD</h1>
     <p class="lead">車番を動かして、展開を組み立てる。</p>
   </div>
 </header>
@@ -249,7 +249,7 @@ footer.boardFooter{
 </section>
 
 <footer class="siteFooter">
-  <p>TENKAI BOARD｜個人開発の非公式ツールです。予想の参考としてご自由にお使いください。</p>
+  <p>展開ボード｜個人開発の非公式ツールです。予想の参考としてご自由にお使いください。</p>
 </footer>
 
 <script>
@@ -490,6 +490,15 @@ footer.boardFooter{
   let touchCounter = 0;
   const lastTouched = {}; // chip番号 -> 最後に触れた時のカウンタ値
 
+  function hasOutgoingEdge(n){
+    for(const e of edgeDir.values()){ if(e.from === n) return true; }
+    return false;
+  }
+  function hasIncomingEdge(n){
+    for(const e of edgeDir.values()){ if(e.to === n) return true; }
+    return false;
+  }
+
   function handleTap(n, el){
     if(!connectMode) return;
     if(firstPicked === null){
@@ -502,9 +511,18 @@ footer.boardFooter{
       const a = Math.min(firstPicked, n), b = Math.max(firstPicked, n);
       const key = a+'-'+b;
       if(connections.has(key)){
+        // 既につながっている相手同士を選び直した＝解除操作なので、これは常に許可する
         connections.delete(key);
         edgeDir.delete(key);
       } else {
+        // 新しくつなごうとする場合のみ、誤タップ防止のチェックを行う。
+        // ・先頭側（firstPicked）が既に別の相手へ矢印を出している場合はブロック（分岐防止）
+        // ・後続側（n）が既に別の相手から矢印を受けている場合もブロック（二重の先頭を防止）
+        if(hasOutgoingEdge(firstPicked) || hasIncomingEdge(n)){
+          field.querySelector('.chip[data-num="'+firstPicked+'"]').classList.remove('selected');
+          firstPicked = null;
+          return;
+        }
         connections.add(key);
         edgeDir.set(key, {from: firstPicked, to: n}); // タップした順=前(先頭)→後
         // 新しくつないだライン（＝この2つが属することになるグループ全体）を最前面にする
