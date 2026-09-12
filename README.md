@@ -1,2 +1,2 @@
-# keirin-board
-競輪の展開ボード
+# tenkai-board
+TENKAI BOARD
