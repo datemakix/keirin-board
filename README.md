@@ -1,2 +1,2 @@
-# tenkai-board
+# tenkai board
 TENKAI BOARD
