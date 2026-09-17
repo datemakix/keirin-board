@@ -485,7 +485,7 @@ footer.boardFooter{
       const pa = state[a], pb = state[b];
       if(!pa || !pb) return;
       // state は既にコース座標(viewBox)なのでそのまま使える
-      svg += `<line x1="${pa.x}" y1="${pa.y}" x2="${pb.x}" y2="${pb.y}" stroke="#0b1a1e" stroke-width="7" stroke-linecap="round" opacity="0.9"/><line x1="${pa.x}" y1="${pa.y}" x2="${pb.x}" y2="${pb.y}" stroke="#3ecbff" stroke-width="4" stroke-linecap="round" opacity="0.95"/>`;
+      svg += `<line x1="${pa.x}" y1="${pa.y}" x2="${pb.x}" y2="${pb.y}" stroke="#071B24" stroke-width="11" stroke-linecap="round"/><line x1="${pa.x}" y1="${pa.y}" x2="${pb.x}" y2="${pb.y}" stroke="#45D9FF" stroke-width="6" stroke-linecap="round"/>`;
     });
     connSvg.innerHTML = svg;
   }
