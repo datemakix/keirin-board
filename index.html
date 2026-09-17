@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1, user-scalable=no">
-<title>KEIRIN BOARD｜競輪</title>
+<title>TENKAI BOARD｜競輪</title>
 <meta name="description" content="競輪の並び予想を、車番チップをドラッグ＆タップするだけで直感的に組み立てられる無料ツール。">
 <link rel="icon" type="image/jpeg" href="favicon.jpg">
 <link rel="apple-touch-icon" href="favicon.jpg">
@@ -123,6 +123,8 @@ button{
   cursor:pointer; letter-spacing:.02em;
   transition: background .15s ease, transform .1s ease, border-color .15s ease;
 }
+button:disabled{ opacity:.4; cursor:default; }
+#boardStatus{ min-height:2.8em; line-height:1.4; color:rgba(242,234,217,.75); }
 button:hover{ background: rgba(242,234,217,0.14); }
 button:active{ transform: scale(0.96); }
 button.primary{
@@ -191,6 +193,7 @@ footer.boardFooter{
   gap:10px; flex-wrap:wrap;
 }
 .legend{ display:flex; gap:4px; flex-wrap:wrap; align-items:center; }
+.legend span[hidden]{ display:none; }
 .legend span{
   display:inline-flex; align-items:center; justify-content:center;
   width:16px;height:16px;border-radius:4px; font-size:0;
@@ -209,7 +212,7 @@ footer.boardFooter{
 
 <header class="siteHero">
   <div class="siteHero-inner">
-    <h1>KEIRIN BOARD</h1>
+    <h1>TENKAI BOARD</h1>
     <p class="lead">車番を動かして、展開を組み立てる。</p>
   </div>
 </header>
@@ -226,10 +229,14 @@ footer.boardFooter{
 </div>
 <footer class="boardFooter">
   <div class="controls">
+    <button id="btnCount" aria-label="出走数を切り替え">9車 → 7車に切替</button>
+    <button id="btnSave">並びの保存</button>
+    <button id="btnRestore" disabled>保存した並びに戻す</button>
     <button id="btnConnect" class="primary">🔗 ライン接続: ON</button>
     <button id="btnClearConn" class="danger">接続を全消去</button>
     <button id="btnReset" class="primary">並びをリセット</button>
   </div>
+  <div id="boardStatus" role="status" aria-live="polite">先頭→番手の順にタップして接続。個別に動かすときは接続OFF。</div>
   <div class="footerBottom">
     <div class="legend" id="legend"></div>
     <div>©だてまき</div>
@@ -244,19 +251,20 @@ footer.boardFooter{
     <h2>使い方</h2>
     <ol class="steps">
       <li><span class="step-badge c1">1</span><span>車番チップをドラッグして並べてください。</span></li>
-      <li><span class="step-badge c2">2</span><span>「ライン接続」がONの状態で、2車を順番にタップするとラインができます。ラインの番手のチップをタップして次の番号を選ぶと3車ラインになります。ラインが組まれた2車に対し同じ操作をすると、ラインが外れます。</span></li>
+      <li><span class="step-badge c2">2</span><span>「ライン接続」がONの状態で、2車を順番にタップするとラインができます。ラインの番手のチップをタップして次の番号を選ぶと3車ラインになります。ラインが組まれた2車に対し同じ操作をすると、ラインが外れます。先頭を動かすと後続がついてきます。個別に動かすときは「ライン接続」をOFFにしてください。</span></li>
       <li><span class="step-badge c3">3</span><span>並びを組み直したいときは「並びをリセット」でいつでも初期配置に戻せます。</span></li>
+      <li><span class="step-badge c4">4</span><span>「並びの保存」で現在の並び・ラインを1つ保存できます。展開を試したら「保存した並びに戻す」で戻せます。再度保存すると上書きします。</span></li>
     </ol>
   </div>
 </section>
 
 <footer class="siteFooter">
-  <p>KEIRIN BOARD｜個人開発の非公式ツールです。予想の参考としてご自由にお使いください。</p>
+  <p>TENKAI BOARD｜個人開発の非公式ツールです。予想の参考としてご自由にお使いください。</p>
 </footer>
 
 <script>
 (function(){
-  const NUMS = [1,2,3,4,5,6,7,8,9];
+  let NUMS = [1,2,3,4,5,6,7,8,9];
   const field = document.getElementById('field');
   const trackSvg = document.getElementById('trackSvg');
   const connSvg = document.getElementById('connSvg');
@@ -350,6 +358,56 @@ footer.boardFooter{
   const connections = new Set(); // "a-b" a<b（接続の有無の判定用）
   const edgeDir = new Map(); // "a-b" -> {from, to}（タップした順＝ライン前後関係）
 
+  const status = document.getElementById('boardStatus');
+  const btnCount = document.getElementById('btnCount');
+  const btnSave = document.getElementById('btnSave');
+  const btnRestore = document.getElementById('btnRestore');
+  const SAVE_KEY = 'keirin-board-snapshot-v1';
+  let savedLayout = null;
+  function announce(message){ status.textContent = message; }
+  function clearSelection(){
+    field.querySelectorAll('.selected').forEach(el=>el.classList.remove('selected'));
+    firstPicked = null;
+  }
+  function wouldCycle(from, to){
+    const seen = new Set();
+    let node = to;
+    while(!seen.has(node)){
+      if(node === from) return true;
+      seen.add(node);
+      const next = [...edgeDir.values()].find(e=>e.from === node);
+      if(!next) return false;
+      node = next.to;
+    }
+    return true;
+  }
+  function updateCount(){
+    btnCount.textContent = NUMS.length === 9 ? '9車 → 7車に切替' : '7車 → 9車に切替';
+    [...legend.children].forEach((el,i)=>{ el.hidden = i >= NUMS.length; });
+  }
+  // 移動・追従・画面サイズ変更のいずれでも、チップ全体を操作領域内に収める。
+  function keepGroupsVisible(){
+    const r = fieldRect(), tr = trackRect();
+    if(!tr.scale) return;
+    const padding = getChipSizePx()/2 + 4;
+    const min = toTrack(padding, padding), max = toTrack(r.width-padding,r.height-padding);
+    const groups = connectMode ? getGroupsForZOrder().map(g=>g.order) : NUMS.map(n=>[n]);
+    groups.forEach(group=>{
+      for(const axis of ['x','y']){
+        const low = Math.min(...group.map(n=>state[n][axis]));
+        const high = Math.max(...group.map(n=>state[n][axis]));
+        const room = max[axis]-min[axis];
+        if(high-low > room){
+          group.forEach(n=>state[n][axis] = min[axis]+(state[n][axis]-low)*room/(high-low));
+        } else {
+          const shift = low < min[axis] ? min[axis]-low : high > max[axis] ? max[axis]-high : 0;
+          group.forEach(n=>state[n][axis] += shift);
+        }
+      }
+    });
+    NUMS.forEach(positionChip);
+  }
+
   function fieldRect(){ return field.getBoundingClientRect(); }
 
   // 縦横比(1000:TRACK_H)を保ったまま中央に収まる、実際の走路の描画領域を返す
@@ -440,6 +498,7 @@ footer.boardFooter{
 
     el.addEventListener('pointerdown', (e)=>{
       e.preventDefault();
+      if(dragging || e.isPrimary === false || e.button !== 0) return;
       dragging = true; moved = false;
       el.setPointerCapture(e.pointerId);
       el.classList.add('dragging');
@@ -463,13 +522,14 @@ footer.boardFooter{
         lastTouched[n] = touchCounter;
         applyZOrder();
       }
+      if(!moved) return;
       const r = fieldRect();
       let x = (e.clientX - r.left) - offX;
       let y = (e.clientY - r.top) - offY;
       x = clamp(x, 20, r.width-20);
       y = clamp(y, 20, r.height-20);
       state[n] = toTrack(x, y);
-      positionChip(n);
+      keepGroupsVisible();
       drawConnections();
     });
 
@@ -478,7 +538,7 @@ footer.boardFooter{
       dragging = false;
       el.classList.remove('dragging');
       applyZOrder();
-      if(!moved){
+      if(!moved && e.type !== 'pointercancel'){
         handleTap(n, el);
       }
     }
@@ -520,7 +580,8 @@ footer.boardFooter{
         // 新しくつなごうとする場合のみ、誤タップ防止のチェックを行う。
         // ・先頭側（firstPicked）が既に別の相手へ矢印を出している場合はブロック（分岐防止）
         // ・後続側（n）が既に別の相手から矢印を受けている場合もブロック（二重の先頭を防止）
-        if(hasOutgoingEdge(firstPicked) || hasIncomingEdge(n)){
+        if(hasOutgoingEdge(firstPicked) || hasIncomingEdge(n) || wouldCycle(firstPicked,n)){
+          announce('接続できません。分岐や輪になる接続を避け、先頭→番手の順に選んでください。');
           field.querySelector('.chip[data-num="'+firstPicked+'"]').classList.remove('selected');
           firstPicked = null;
           return;
@@ -536,6 +597,7 @@ footer.boardFooter{
       firstPicked = null;
       drawConnections();
       applyZOrder();
+      announce('接続を更新しました。先頭を動かすと後続がついてきます。');
     }
   }
 
@@ -626,6 +688,7 @@ footer.boardFooter{
   });
 
   btnClearConn.addEventListener('click', ()=>{
+    clearSelection();
     connections.clear();
     edgeDir.clear();
     drawConnections();
@@ -633,6 +696,7 @@ footer.boardFooter{
   });
 
   btnReset.addEventListener('click', ()=>{
+    clearSelection();
     defaultLayout();
     renderChips();
     connections.clear();
@@ -651,7 +715,7 @@ footer.boardFooter{
     clearTimeout(resizeTimer);
     resizeTimer = setTimeout(()=>{
       updateFieldSvgs();
-      NUMS.forEach(n=> positionChip(n));
+      keepGroupsVisible();
       drawConnections();
     }, 150);
   });
@@ -661,7 +725,7 @@ footer.boardFooter{
   // 一定の間隔を保ちながら、少し遅れてぬるっと追いかけてくる。
   // OFFにすると、この追従は行われなくなる（それぞれ独立して動く）。
   function chaseGapRatio(){
-    return ISMOBILE ? 5/4 : 4/3; // スマホ：チップ1個分＋1/4／PC：チップ1個分＋1/3
+    return 1.1; // 車間をチップ幅の10%に統一（PC約4px／スマホ約3px）
   }
   const CHASE_EASE = 0.16;     // 追いつく速さ（小さいほど、より“ぬるっと”遅れてついてくる）
 
@@ -721,10 +785,66 @@ footer.boardFooter{
           moved = true;
         }
       });
-      if(moved) drawConnections();
+      if(moved){ keepGroupsVisible(); drawConnections(); }
     }
     requestAnimationFrame(stepChase);
   }
+
+  btnCount.addEventListener('click', ()=>{
+    clearSelection();
+    const count = NUMS.length === 9 ? 7 : 9;
+    NUMS = Array.from({length:count},(_,i)=>i+1);
+    for(const [key,e] of edgeDir){
+      if(e.from > count || e.to > count){ edgeDir.delete(key); connections.delete(key); }
+    }
+    if(count === 9){
+      state[8] = {x: ISMOBILE ? 800 : 776, y: ISMOBILE ? 206 : 78};
+      state[9] = {x: ISMOBILE ? 900 : 868, y: ISMOBILE ? 206 : 78};
+    }
+    renderChips(); updateCount(); keepGroupsVisible(); drawConnections(); applyZOrder();
+    announce(count+'車に切り替えました。');
+  });
+  function validSnapshot(s){
+    if(!s || s.version !== 1 || ![7,9].includes(s.count) || typeof s.mode !== 'boolean' || !s.positions || !Array.isArray(s.edges)) return false;
+    for(let n=1;n<=s.count;n++){
+      const p=s.positions[n];
+      if(!p || !Number.isFinite(p.x) || !Number.isFinite(p.y) || Math.abs(p.x)>10000 || Math.abs(p.y)>10000) return false;
+    }
+    const out=new Map(), incoming=new Set();
+    for(const e of s.edges){
+      if(!e || !Number.isInteger(e.from) || !Number.isInteger(e.to) || e.from<1 || e.to<1 || e.from>s.count || e.to>s.count || out.has(e.from) || incoming.has(e.to)) return false;
+      out.set(e.from,e.to); incoming.add(e.to);
+    }
+    for(const n of out.keys()){
+      const seen=new Set(); let node=n;
+      while(out.has(node)){ if(seen.has(node)) return false; seen.add(node); node=out.get(node); }
+    }
+    return true;
+  }
+  btnSave.addEventListener('click', ()=>{
+    clearSelection();
+    savedLayout = {version:1,count:NUMS.length,mode:connectMode,positions:JSON.parse(JSON.stringify(state)),edges:[...edgeDir.values()].map(e=>({...e}))};
+    btnRestore.disabled=false;
+    try{ localStorage.setItem(SAVE_KEY,JSON.stringify(savedLayout)); announce('並びを保存しました。同じブラウザで次回も戻せます。'); }
+    catch{ announce('並びをこのページ内に保存しました。ブラウザ保存が使えないため、閉じると消えます。'); }
+  });
+  btnRestore.addEventListener('click', ()=>{
+    if(!validSnapshot(savedLayout)) return;
+    clearSelection();
+    NUMS=Array.from({length:savedLayout.count},(_,i)=>i+1);
+    NUMS.forEach(n=>state[n]={...savedLayout.positions[n]});
+    connections.clear(); edgeDir.clear();
+    savedLayout.edges.forEach(e=>{const key=Math.min(e.from,e.to)+'-'+Math.max(e.from,e.to); connections.add(key); edgeDir.set(key,{...e});});
+    connectMode=savedLayout.mode;
+    btnConnect.textContent='🔗 ライン接続: '+(connectMode?'ON':'OFF');
+    btnConnect.classList.toggle('primary',connectMode);
+    renderChips(); updateCount(); keepGroupsVisible(); drawConnections(); applyZOrder();
+    announce('保存した並びに戻しました。');
+  });
+  try{
+    const stored=JSON.parse(localStorage.getItem(SAVE_KEY));
+    if(validSnapshot(stored)){savedLayout=stored;btnRestore.disabled=false;}
+  } catch{}
 
   // init
   updateFieldSvgs();
@@ -732,6 +852,8 @@ footer.boardFooter{
   renderChips();
   drawConnections();
   applyZOrder();
+  updateCount();
+  keepGroupsVisible();
   requestAnimationFrame(stepChase);
 })();
 </script>
