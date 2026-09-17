@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1, user-scalable=no">
-<title>KEIRIN BOARD</title>
+<title>展開ボード｜競輪</title>
 <meta name="description" content="競輪の並び予想を、車番チップをドラッグ＆タップするだけで直感的に組み立てられる無料ツール。">
 <link rel="icon" type="image/jpeg" href="favicon.jpg">
 <link rel="apple-touch-icon" href="favicon.jpg">
@@ -249,7 +249,7 @@ footer.boardFooter{
 </section>
 
 <footer class="siteFooter">
-  <p>KEIRIN BOARD｜個人開発の非公式ツールです。予想の参考としてご自由にお使いください。</p>
+  <p>展開ボード｜個人開発の非公式ツールです。予想の参考としてご自由にお使いください。</p>
 </footer>
 
 <script>
@@ -691,11 +691,16 @@ footer.boardFooter{
           const STRAIGHT_X_MIN = 280, STRAIGHT_X_MAX = 720; // この範囲外はコーナー扱い
           const inCorner = leader.x < STRAIGHT_X_MIN || leader.x > STRAIGHT_X_MAX;
           if(inCorner){
-            // コーナー：以前と同じ、線をたどるように追いかける“蛇”のような動き
-            const dx = leader.x - follower.x, dy = leader.y - follower.y;
-            const dist = Math.hypot(dx, dy) || 0.0001;
-            tx = leader.x - (dx/dist)*gap;
-            ty = leader.y - (dy/dist)*gap;
+            // コーナー：直線と同じ考え方で、コースの接線方向（進行方向の後ろ側）に
+            // 固定の間隔で位置させる。これにより、直線と同様にコーナーでも追い抜きが起きない。
+            const cornerCx = leader.x < 500 ? STRAIGHT_X_MIN : STRAIGHT_X_MAX;
+            const rx = leader.x - cornerCx, ry = leader.y - OVAL_CENTER_Y;
+            const rlen = Math.hypot(rx, ry) || 0.0001;
+            // 進行方向（反時計回り）の接線ベクトル。バック/ホームストレートの
+            // 進行方向（左向き／右向き）と境目でなめらかに繋がるように向きを合わせてある。
+            const fx = ry / rlen, fy = -rx / rlen;
+            tx = leader.x - fx*gap;
+            ty = leader.y - fy*gap;
           } else if(leader.y < OVAL_CENTER_Y){
             // バックストレート：先頭の3時方向（右）
             tx = leader.x + gap;
