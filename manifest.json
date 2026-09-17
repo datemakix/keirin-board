@@ -1,0 +1,12 @@
+{
+  "name": "KEIRIN BOARD",
+  "short_name": "KEIRIN BOARD",
+  "start_url": "./index.html",
+  "display": "standalone",
+  "background_color": "#0b1a1e",
+  "theme_color": "#0b1a1e",
+  "icons": [
+    { "src": "favicon.jpg", "sizes": "1254x1254", "type": "image/jpeg", "purpose": "any" },
+    { "src": "favicon.jpg", "sizes": "1254x1254", "type": "image/jpeg", "purpose": "maskable" }
+  ]
+}
