@@ -274,6 +274,36 @@ footer.boardFooter{
     <!-- chips injected by JS -->
   </div>
 </div>
+<footer class="boardFooter">
+  <div class="controls">
+    <button id="btnCount" aria-label="出走数を切り替え">9車 → 7車に切替</button>
+    <button id="btnSave">並びの保存</button>
+    <button id="btnRestore" disabled>保存した並びに戻す</button>
+    <button id="btnConnect" class="primary">🔗 ライン接続: ON</button>
+    <button id="btnClearConn" class="danger">接続を全消去</button>
+    <button id="btnReset" class="primary">並びをリセット</button>
+  </div>
+  <div id="boardStatus" role="status" aria-live="polite">先頭→番手の順にタップして接続。個別に動かすときは接続OFF。</div>
+  <div class="footerBottom">
+    <div class="legend" id="legend"></div>
+    <div>©だてまき</div>
+  </div>
+</footer>
+</div>
+
+<div class="finishLine"></div>
+
+<section class="guide">
+  <div class="guide-inner">
+    <h2>使い方</h2>
+    <ol class="steps">
+      <li><span class="step-badge c1">1</span><span>車番チップをドラッグして並べてください。</span></li>
+      <li><span class="step-badge c2">2</span><span>「ライン接続」がONの状態で、2車を順番にタップするとラインができます。ラインの番手のチップをタップして次の番号を選ぶと3車ラインになります。ラインが組まれた2車に対し同じ操作をすると、ラインが外れます。先頭を動かすと後続がついてきます。個別に動かすときは「ライン接続」をOFFにしてください。</span></li>
+      <li><span class="step-badge c3">3</span><span>並びを組み直したいときは「並びをリセット」でいつでも初期配置に戻せます。</span></li>
+      <li><span class="step-badge c4">4</span><span>「並びの保存」で現在の並び・ラインを1つ保存できます。展開を試したら「保存した並びに戻す」で戻せます。再度保存すると上書きします。</span></li>
+    </ol>
+  </div>
+</section>
 <section class="site-notes" aria-label="サイトについて">
   <details>
     <summary>このサイトについて・ご利用にあたって</summary>
@@ -312,37 +342,6 @@ footer.boardFooter{
     </div>
   </details>
 </section>
-<footer class="boardFooter">
-  <div class="controls">
-    <button id="btnCount" aria-label="出走数を切り替え">9車 → 7車に切替</button>
-    <button id="btnSave">並びの保存</button>
-    <button id="btnRestore" disabled>保存した並びに戻す</button>
-    <button id="btnConnect" class="primary">🔗 ライン接続: ON</button>
-    <button id="btnClearConn" class="danger">接続を全消去</button>
-    <button id="btnReset" class="primary">並びをリセット</button>
-  </div>
-  <div id="boardStatus" role="status" aria-live="polite">先頭→番手の順にタップして接続。個別に動かすときは接続OFF。</div>
-  <div class="footerBottom">
-    <div class="legend" id="legend"></div>
-    <div>©だてまき</div>
-  </div>
-</footer>
-</div>
-
-<div class="finishLine"></div>
-
-<section class="guide">
-  <div class="guide-inner">
-    <h2>使い方</h2>
-    <ol class="steps">
-      <li><span class="step-badge c1">1</span><span>車番チップをドラッグして並べてください。</span></li>
-      <li><span class="step-badge c2">2</span><span>「ライン接続」がONの状態で、2車を順番にタップするとラインができます。ラインの番手のチップをタップして次の番号を選ぶと3車ラインになります。ラインが組まれた2車に対し同じ操作をすると、ラインが外れます。先頭を動かすと後続がついてきます。個別に動かすときは「ライン接続」をOFFにしてください。</span></li>
-      <li><span class="step-badge c3">3</span><span>並びを組み直したいときは「並びをリセット」でいつでも初期配置に戻せます。</span></li>
-      <li><span class="step-badge c4">4</span><span>「並びの保存」で現在の並び・ラインを1つ保存できます。展開を試したら「保存した並びに戻す」で戻せます。再度保存すると上書きします。</span></li>
-    </ol>
-  </div>
-</section>
-
 <footer class="siteFooter">
   <p>TENKAI BOARD｜個人開発の非公式ツールです。予想の参考としてご自由にお使いください。</p>
 </footer>
