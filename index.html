@@ -1,0 +1,946 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1, user-scalable=no">
+<title>競輪展開ボード｜ラインを動かして展開予想｜TENKAI BOARD</title>
+<meta name="description" content="TENKAI BOARDは、車番チップを動かして競輪のラインやレース展開を整理できる無料の競輪展開ボード。パソコン・スマホで並びを組み立て、展開予想の補助に使えます。">
+<link rel="icon" type="image/jpeg" href="favicon.jpg">
+<link rel="apple-touch-icon" href="favicon.jpg">
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#0b1a1e">
+<style>
+.site-notes{
+  max-width:1000px;
+  margin:28px auto 0;
+  padding:0 16px;
+  font-size:13px;
+  line-height:1.8;
+  color:rgba(242,234,217,.72);
+}
+.site-notes details{
+  border-top:1px solid rgba(255,255,255,.16);
+}
+.site-notes details:last-child{
+  border-bottom:1px solid rgba(255,255,255,.16);
+}
+.site-notes summary{
+  cursor:pointer;
+  padding:14px 2px;
+  font-weight:700;
+  color:rgba(242,234,217,.92);
+}
+.site-notes .note-inner{
+  padding:0 2px 16px;
+}
+.site-notes h3{
+  margin:14px 0 4px;
+  font-size:13px;
+  color:rgba(242,234,217,.92);
+}
+.site-notes p{
+  margin:0 0 10px;
+}
+.site-notes a{
+  color:#f6d45b;
+}
+
+:root{
+  --night: #0b1a1e;
+  --track: #7a3b2e;
+  --track-dark: #5c2c22;
+  --infield: #1f3b2c;
+  --infield-line: #2c5240;
+  --paper: #f2ead9;
+  --ink: #14201f;
+  --accent: #e0b84a;
+  --line-red: #e0483a;
+
+  --c1: #f7f4ec; --c1-ink:#14201f;
+  --c2: #1b1b1b; --c2-ink:#f2ead9;
+  --c3: #c8402c; --c3-ink:#fff;
+  --c4: #2a5c9e; --c4-ink:#fff;
+  --c5: #e7c23a; --c5-ink:#14201f;
+  --c6: #2f7d4f; --c6-ink:#fff;
+  --c7: #d9772a; --c7-ink:#fff;
+  --c8: #d4679a; --c8-ink:#fff;
+  --c9: #6a4c93; --c9-ink:#fff;
+}
+*{box-sizing:border-box; -webkit-tap-highlight-color: transparent;}
+html{ scroll-behavior: smooth; }
+html,body{
+  margin:0; padding:0;
+  background: var(--night);
+  font-family: "Hiragino Sans","Hiragino Kaku Gothic ProN","Yu Gothic",-apple-system,BlinkMacSystemFont,sans-serif;
+  color: var(--paper);
+  overscroll-behavior-y: contain;
+}
+
+/* ===== ヒーロー ===== */
+.siteHero{
+  padding: 64px 20px 44px;
+  background:
+    radial-gradient(120% 140% at 50% -10%, rgba(224,184,74,0.12), transparent 60%),
+    var(--night);
+  border-bottom: 1px solid rgba(242,234,217,0.12);
+}
+.siteHero-inner{ max-width: 640px; margin: 0 auto; text-align:center; }
+.siteHero .eyebrow{
+  font-family: "Courier New", monospace;
+  font-size: 11px; letter-spacing:.22em; font-weight:700;
+  color: var(--accent); margin:0 0 14px;
+}
+.siteHero h1{
+  margin: 0 0 16px; font-size: clamp(24px, 5vw, 36px); line-height:1.4;
+  font-weight: 800; letter-spacing:.01em; color: var(--paper);
+}
+.siteHero .hero-img{
+  display:block; margin: 0 auto 26px; width:100%; max-width: 340px; height:auto;
+  border-radius: 18px; border: 2px solid rgba(224,184,74,0.35);
+  box-shadow: 0 18px 40px rgba(0,0,0,0.45);
+}
+.siteHero .lead{
+  margin: 0 auto 30px; max-width: 480px; font-size: 14.5px; line-height:1.85;
+  color: rgba(242,234,217,0.72);
+}
+.siteHero .cta{
+  display:inline-block; padding: 13px 28px; border-radius:999px;
+  background: var(--accent); color: var(--night); font-weight:800; font-size:13.5px;
+  text-decoration:none; letter-spacing:.03em;
+  box-shadow: 0 4px 0 rgba(0,0,0,0.25);
+  transition: transform .12s ease;
+}
+.siteHero .cta:active{ transform: translateY(2px); }
+
+/* 写真判定線のような区切り */
+.finishLine{
+  height:1px; margin:0;
+  background: repeating-linear-gradient(90deg, rgba(242,234,217,0.45) 0 8px, transparent 8px 16px);
+}
+
+/* ===== 使い方ガイド ===== */
+.guide{ padding: 52px 20px 56px; background: var(--night); }
+.guide-inner{ max-width: 620px; margin:0 auto; }
+.guide h2{
+  font-size:19px; font-weight:800; color:var(--paper); margin:0 0 30px;
+  text-align:center; letter-spacing:.02em;
+}
+.guide .steps{ list-style:none; margin:0; padding:0; display:flex; flex-direction:column; gap:22px; }
+.guide .steps li{
+  display:flex; align-items:flex-start; gap:14px;
+  font-size:13.5px; line-height:1.8; color: rgba(242,234,217,0.8);
+}
+.guide .step-badge{
+  flex:none; width:30px; height:30px; border-radius:50%;
+  display:flex; align-items:center; justify-content:center;
+  font-weight:800; font-size:13px; margin-top:1px;
+  border: 2px solid rgba(255,255,255,0.3);
+}
+
+/* ===== ページフッター ===== */
+.siteFooter{
+  padding: 22px 20px 36px; text-align:center;
+  font-size:11px; color: rgba(242,234,217,0.4);
+  background: var(--night); border-top: 1px solid rgba(242,234,217,0.1);
+}
+
+/* ===== ここから既存のボード部分のスタイル ===== */
+.app{
+  display:flex; flex-direction:column;
+  height:100vh; height:100dvh;
+  width:100vw;
+}
+.controls{ display:flex; gap:8px; flex-wrap:wrap; }
+button{
+  font-family:inherit; font-size:12.5px; font-weight:700;
+  padding:8px 12px; border-radius: 999px; border: 1px solid rgba(242,234,217,0.25);
+  background: rgba(242,234,217,0.06); color: var(--paper);
+  cursor:pointer; letter-spacing:.02em;
+  transition: background .15s ease, transform .1s ease, border-color .15s ease;
+}
+button:disabled{ opacity:.4; cursor:default; }
+#boardStatus{ min-height:2.8em; line-height:1.4; color:rgba(242,234,217,.75); }
+button:hover{ background: rgba(242,234,217,0.14); }
+button:active{ transform: scale(0.96); }
+button.primary{
+  background: var(--accent); color: #14201f; border-color: var(--accent);
+}
+button.primary:hover{ filter: brightness(1.06); }
+button.danger{ border-color: rgba(224,72,58,0.5); }
+button.danger:hover{ background: rgba(224,72,58,0.18); }
+.field-wrap{
+  position: relative; flex:1; min-height: 0; margin: 0 10px 10px;
+  border-radius: 22px; overflow:hidden;
+  border: 1px solid rgba(242,234,217,0.15);
+  box-shadow: inset 0 0 60px rgba(0,0,0,0.35);
+}
+#field{
+  position:absolute; inset:0; width:100%; height:100%; touch-action:none;
+  background: var(--night);
+}
+#trackSvg{ position:absolute; pointer-events:none; }
+#connSvg{ position:absolute; pointer-events:none; z-index:5; }
+.zone-label{
+  position:absolute; font-size:10.5px; letter-spacing:.14em; font-weight:700;
+  color: rgba(242,234,217,0.4); pointer-events:none; text-transform:uppercase;
+}
+.chip{
+  position:absolute; z-index:10;
+  width: 42px; height:42px; margin-left:-21px; margin-top:-21px;
+  border-radius:8px;
+  display:flex; align-items:center; justify-content:center;
+  font-weight:800; font-size:16px;
+  box-shadow: 0 3px 0 rgba(0,0,0,0.35), 0 6px 14px rgba(0,0,0,0.4);
+  border: 2.5px solid rgba(255,255,255,0.35);
+  cursor: grab;
+  user-select:none; touch-action:none;
+  transition: box-shadow .12s ease, filter .12s ease;
+}
+.chip.dragging{
+  cursor:grabbing;
+  box-shadow: 0 8px 0 rgba(0,0,0,0.3), 0 16px 26px rgba(0,0,0,0.5);
+}
+.chip.selected{
+  outline: 3px solid var(--accent); outline-offset: 3px; border-radius: 11px;
+}
+.chip .num{ line-height:1; }
+.chip .tick{
+  position:absolute; top:-3px; left:50%; transform:translateX(-50%);
+  width:0; height:0;
+  border-left: 6px solid transparent; border-right: 6px solid transparent;
+  border-bottom: 8px solid rgba(255,255,255,0.75);
+}
+.c1{ background:var(--c1); color:var(--c1-ink); }
+.c2{ background:var(--c2); color:var(--c2-ink); }
+.c3{ background:var(--c3); color:var(--c3-ink); }
+.c4{ background:var(--c4); color:var(--c4-ink); }
+.c5{ background:var(--c5); color:var(--c5-ink); }
+.c6{ background:var(--c6); color:var(--c6-ink); }
+.c7{ background:var(--c7); color:var(--c7-ink); }
+.c8{ background:var(--c8); color:var(--c8-ink); }
+.c9{ background:var(--c9); color:var(--c9-ink); }
+footer.boardFooter{
+  padding: 10px 16px 12px; display:flex; flex-direction:column; gap:10px;
+  font-size:11px; color: rgba(242,234,217,0.4);
+}
+.footerBottom{
+  display:flex; align-items:center; justify-content:space-between;
+  gap:10px; flex-wrap:wrap;
+}
+.legend{ display:flex; gap:4px; flex-wrap:wrap; align-items:center; }
+.legend span[hidden]{ display:none; }
+.legend span{
+  display:inline-flex; align-items:center; justify-content:center;
+  width:16px;height:16px;border-radius:4px; font-size:0;
+  border:1px solid rgba(255,255,255,0.3);
+}
+@media (max-width: 480px){
+  .siteHero{ padding:48px 18px 34px; }
+  .chip{ width:30px; height:30px; margin-left:-15px; margin-top:-15px; font-size:12px; border-radius:6px; }
+  /* スマホは1画面固定にせず、コースの縦横比ぴったりの高さにして黒い余白（レターボックス）をなくす */
+  .app{ height:auto; }
+  .field-wrap{ flex:none; aspect-ratio: 1000 / 500; }
+}
+</style>
+<!-- SNSで共有したときの表示 -->
+<meta property="og:type" content="website">
+<meta property="og:locale" content="ja_JP">
+<meta property="og:site_name" content="TENKAI BOARD">
+<meta property="og:title" content="競輪展開ボード｜TENKAI BOARD">
+<meta property="og:description" content="車番チップを動かして、競輪のラインやレース展開を整理できる無料ツール。パソコン・スマホで展開予想に使えます。">
+<meta property="og:url" content="https://tenkaiboard.com/">
+<meta property="og:image" content="https://tenkaiboard.com/ogp.jpg">
+<meta name="twitter:card" content="summary_large_image">
+
+<!-- トップページの正式なURL -->
+<link rel="canonical" href="https://tenkaiboard.com/">
+</head>
+<body>
+
+<header class="siteHero">
+  <div class="siteHero-inner">
+    <h1>TENKAI BOARD</h1>
+    <p class="lead">車番を動かして、展開を組み立てる。</p>
+  </div>
+</header>
+
+<div class="finishLine"></div>
+
+<div class="app" id="board">
+<div class="field-wrap">
+  <div id="field">
+    <svg id="trackSvg" preserveAspectRatio="xMidYMid meet"></svg>
+    <svg id="connSvg" preserveAspectRatio="xMidYMid meet"></svg>
+    <!-- chips injected by JS -->
+  </div>
+</div>
+<section class="site-notes" aria-label="サイトについて">
+  <details>
+    <summary>このサイトについて・ご利用にあたって</summary>
+    <div class="note-inner">
+      <h3>このツールについて</h3>
+      <p>
+        TENKAI BOARDは、競輪の車番を動かしながら、ラインやレース展開を整理するための無料ツールです。
+      </p>
+
+      <h3>注意事項</h3>
+      <p>
+        本ツールは競輪の予想を補助するものであり、的中・利益・回収率の向上を保証するものではありません。投票に関する最終的な判断は、ご自身の責任でお願いいたします。
+      </p>
+
+      <h3>お問い合わせ</h3>
+      <p>
+        ご意見・不具合のご連絡は、X
+        <a href="https://x.com/datemaki_crap" target="_blank" rel="noopener noreferrer">@datemaki_crap</a>
+        へお願いします。
+      </p>
+    </div>
+  </details>
+
+  <details id="privacy-policy">
+    <summary>プライバシーポリシー</summary>
+    <div class="note-inner">
+      <p>
+        当サイトでは、利用状況の把握およびサイト改善のためにCloudflare Web Analyticsを使用しています。
+      </p>
+      <p>
+        Cloudflare Web Analyticsは、訪問者の個人データを収集・利用しない仕組みとされています。当サイトでは、お問い合わせ等で利用者が任意に提供した情報を除き、個人を特定する情報を取得しません。
+      </p>
+      <p>
+        本ポリシーは、必要に応じて更新することがあります。
+      </p>
+    </div>
+  </details>
+</section>
+<footer class="boardFooter">
+  <div class="controls">
+    <button id="btnCount" aria-label="出走数を切り替え">9車 → 7車に切替</button>
+    <button id="btnSave">並びの保存</button>
+    <button id="btnRestore" disabled>保存した並びに戻す</button>
+    <button id="btnConnect" class="primary">🔗 ライン接続: ON</button>
+    <button id="btnClearConn" class="danger">接続を全消去</button>
+    <button id="btnReset" class="primary">並びをリセット</button>
+  </div>
+  <div id="boardStatus" role="status" aria-live="polite">先頭→番手の順にタップして接続。個別に動かすときは接続OFF。</div>
+  <div class="footerBottom">
+    <div class="legend" id="legend"></div>
+    <div>©だてまき</div>
+  </div>
+</footer>
+</div>
+
+<div class="finishLine"></div>
+
+<section class="guide">
+  <div class="guide-inner">
+    <h2>使い方</h2>
+    <ol class="steps">
+      <li><span class="step-badge c1">1</span><span>車番チップをドラッグして並べてください。</span></li>
+      <li><span class="step-badge c2">2</span><span>「ライン接続」がONの状態で、2車を順番にタップするとラインができます。ラインの番手のチップをタップして次の番号を選ぶと3車ラインになります。ラインが組まれた2車に対し同じ操作をすると、ラインが外れます。先頭を動かすと後続がついてきます。個別に動かすときは「ライン接続」をOFFにしてください。</span></li>
+      <li><span class="step-badge c3">3</span><span>並びを組み直したいときは「並びをリセット」でいつでも初期配置に戻せます。</span></li>
+      <li><span class="step-badge c4">4</span><span>「並びの保存」で現在の並び・ラインを1つ保存できます。展開を試したら「保存した並びに戻す」で戻せます。再度保存すると上書きします。</span></li>
+    </ol>
+  </div>
+</section>
+
+<footer class="siteFooter">
+  <p>TENKAI BOARD｜個人開発の非公式ツールです。予想の参考としてご自由にお使いください。</p>
+</footer>
+
+<script>
+(function(){
+  let NUMS = [1,2,3,4,5,6,7,8,9];
+  const field = document.getElementById('field');
+  const trackSvg = document.getElementById('trackSvg');
+  const connSvg = document.getElementById('connSvg');
+  const btnConnect = document.getElementById('btnConnect');
+  const btnClearConn = document.getElementById('btnClearConn');
+  const btnReset = document.getElementById('btnReset');
+  const legend = document.getElementById('legend');
+
+  // ---- PC / スマホの判定（幅480px以下はスマホ扱い・起動時に一度だけ判定し、以後は固定）----
+  // スマホ：以前の「ストレートのみ」の見た目 / PC：現行の競輪場オーバルコース
+  function computeIsMobile(){
+    return window.matchMedia('(max-width: 480px)').matches;
+  }
+  const ISMOBILE = computeIsMobile();
+  const TRACK_H = ISMOBILE ? 500 : 710;
+
+  function drawTrack(){
+    trackSvg.setAttribute('viewBox', `0 0 1000 ${TRACK_H}`);
+    connSvg.setAttribute('viewBox', `0 0 1000 ${TRACK_H}`);
+
+    if(ISMOBILE){
+    // ---- draw straight track（以前のストレートのみのシンプル版・上下の余白を半分に詰めた版）----
+    trackSvg.innerHTML = `
+      <rect x="0" y="0" width="1000" height="500" fill="#0b1a1e"/>
+      <!-- 走路（グレー） -->
+      <rect x="0" y="30" width="1000" height="352" fill="#5b5c60"/>
+      <!-- 黄線 -->
+      <rect x="0" y="382" width="1000" height="8" fill="#e8c750"/>
+      <!-- 白線 -->
+      <rect x="0" y="390" width="1000" height="8" fill="#f4f1e8"/>
+      <!-- 赤帯（測線） -->
+      <rect x="0" y="398" width="1000" height="30" fill="#cd7b86"/>
+      <!-- 内側白線 -->
+      <rect x="0" y="428" width="1000" height="8" fill="#f4f1e8"/>
+      <!-- 内圏（フィールド側） -->
+      <rect x="0" y="436" width="1000" height="34" fill="#a8cf5a"/>
+      <!-- 距離表示線 -->
+      <line x1="200" y1="30" x2="200" y2="436" stroke="rgba(255,255,255,0.85)" stroke-width="3"/>
+    `;
+  } else {
+  // ---- draw oval velodrome track（バンク付きオーバルコース）----
+  // 上部(y:0-150)はチップの待機ゾーン。y:150以降にオーバルコースを描画する。
+  // rx = height/2 の角丸長方形を入れ子にすることで、スタジアム型（直線＋半円）の走路になる。
+  trackSvg.innerHTML = `
+    <rect x="0" y="0" width="1000" height="710" fill="#0b1a1e"/>
+
+    <!-- 待機ゾーンの仕切り線 -->
+    <line x1="0" y1="150" x2="1000" y2="150" stroke="rgba(242,234,217,0.15)" stroke-width="1" stroke-dasharray="4 6"/>
+
+    <!-- グレーの走路（一番外側のベース） -->
+    <rect x="20" y="170" width="960" height="520" rx="260" fill="#5b5c60"/>
+    <!-- 黄色い線（細め） -->
+    <rect x="84" y="234" width="832" height="392" rx="196" fill="#e8c750"/>
+    <!-- グレーの走路（黄色い線の内側） -->
+    <rect x="88" y="238" width="824" height="384" rx="192" fill="#5b5c60"/>
+    <!-- 白い線（外帯線・細め） -->
+    <rect x="136" y="286" width="728" height="288" rx="144" fill="#f4f1e8"/>
+    <!-- グレーの走路（白い線の内側） -->
+    <rect x="140" y="290" width="720" height="280" rx="140" fill="#5b5c60"/>
+    <!-- 白い線（内圏線・細め） -->
+    <rect x="172" y="322" width="656" height="216" rx="108" fill="#f4f1e8"/>
+    <!-- 赤い地帯 -->
+    <rect x="176" y="326" width="648" height="208" rx="104" fill="#cd7b86"/>
+    <!-- 内圏（緑・約半分のサイズ） -->
+    <rect x="206" y="356" width="588" height="148" rx="74" fill="#a8cf5a"/>
+
+    <!-- バック・ストレッチ・ライン（奥側・中心より左寄り、3つのグレー帯を貫通） -->
+    <line x1="380" y1="170" x2="380" y2="322" stroke="rgba(255,255,255,0.85)" stroke-width="3"/>
+    <!-- ホーム・ストレッチ側の3本（手前、3つのグレー帯を貫通） -->
+    <line x1="380" y1="538" x2="380" y2="690" stroke="rgba(255,255,255,0.85)" stroke-width="3"/>
+    <line x1="500" y1="538" x2="500" y2="690" stroke="rgba(255,255,255,0.85)" stroke-width="3"/>
+    <line x1="620" y1="538" x2="620" y2="690" stroke="rgba(255,255,255,0.85)" stroke-width="3"/>
+  `;
+  }
+  }
+  drawTrack();
+
+  // ---- keirin standard car-number colors ----
+  const COLORS = {1:'白',2:'黒',3:'赤',4:'青',5:'黄',6:'緑',7:'橙',8:'桃',9:'紫'};
+  NUMS.forEach(n=>{
+    const s = document.createElement('span');
+    s.className = 'c'+n;
+    s.title = n+'番 ('+COLORS[n]+')';
+    legend.appendChild(s);
+  });
+
+  // ---- state ----
+  const state = {}; // n -> {x,y} in track coords (viewBox 0-1000 x 0-710)
+  let connectMode = true;
+  let firstPicked = null;
+  const connections = new Set(); // "a-b" a<b（接続の有無の判定用）
+  const edgeDir = new Map(); // "a-b" -> {from, to}（タップした順＝ライン前後関係）
+
+  const status = document.getElementById('boardStatus');
+  const btnCount = document.getElementById('btnCount');
+  const btnSave = document.getElementById('btnSave');
+  const btnRestore = document.getElementById('btnRestore');
+  const SAVE_KEY = 'keirin-board-snapshot-v1';
+  let savedLayout = null;
+  function announce(message){ status.textContent = message; }
+  function clearSelection(){
+    field.querySelectorAll('.selected').forEach(el=>el.classList.remove('selected'));
+    firstPicked = null;
+  }
+  function wouldCycle(from, to){
+    const seen = new Set();
+    let node = to;
+    while(!seen.has(node)){
+      if(node === from) return true;
+      seen.add(node);
+      const next = [...edgeDir.values()].find(e=>e.from === node);
+      if(!next) return false;
+      node = next.to;
+    }
+    return true;
+  }
+  function updateCount(){
+    btnCount.textContent = NUMS.length === 9 ? '9車 → 7車に切替' : '7車 → 9車に切替';
+    [...legend.children].forEach((el,i)=>{ el.hidden = i >= NUMS.length; });
+  }
+  // 移動・追従・画面サイズ変更のいずれでも、チップ全体を操作領域内に収める。
+  function keepGroupsVisible(){
+    const r = fieldRect(), tr = trackRect();
+    if(!tr.scale) return;
+    const padding = getChipSizePx()/2 + 4;
+    const min = toTrack(padding, padding), max = toTrack(r.width-padding,r.height-padding);
+    const groups = connectMode ? getGroupsForZOrder().map(g=>g.order) : NUMS.map(n=>[n]);
+    groups.forEach(group=>{
+      for(const axis of ['x','y']){
+        const low = Math.min(...group.map(n=>state[n][axis]));
+        const high = Math.max(...group.map(n=>state[n][axis]));
+        const room = max[axis]-min[axis];
+        if(high-low > room){
+          group.forEach(n=>state[n][axis] = min[axis]+(state[n][axis]-low)*room/(high-low));
+        } else {
+          const shift = low < min[axis] ? min[axis]-low : high > max[axis] ? max[axis]-high : 0;
+          group.forEach(n=>state[n][axis] += shift);
+        }
+      }
+    });
+    NUMS.forEach(positionChip);
+  }
+
+  function fieldRect(){ return field.getBoundingClientRect(); }
+
+  // 縦横比(1000:TRACK_H)を保ったまま中央に収まる、実際の走路の描画領域を返す
+  function trackRect(){
+    const r = fieldRect();
+    const scale = Math.min(r.width/1000, r.height/TRACK_H);
+    const w = 1000*scale, h = TRACK_H*scale;
+    const x = (r.width - w)/2, y = (r.height - h)/2;
+    return { x, y, width:w, height:h, scale };
+  }
+
+  // トラックSVGを、チップと全く同じ座標計算(trackRect)で配置・サイズ指定する。
+  // こうすることで、ズームしてもSVGの見た目とチップの位置が必ず一致する。
+  function updateFieldSvgs(){
+    const tr = trackRect();
+    [trackSvg, connSvg].forEach(svg=>{
+      svg.style.left = tr.x + 'px';
+      svg.style.top = tr.y + 'px';
+      svg.style.width = tr.width + 'px';
+      svg.style.height = tr.height + 'px';
+    });
+  }
+
+  // 車番の位置は画面ピクセルではなく、コース座標(viewBox 0-1000 x 0-TRACK_H)で保持する。
+  // こうすることで、拡大・縮小してもコース上の相対位置がずれない。
+  function toTrack(fx, fy){
+    const tr = trackRect();
+    return { x: (fx - tr.x) / tr.scale, y: (fy - tr.y) / tr.scale };
+  }
+  function toField(tx, ty){
+    const tr = trackRect();
+    return { x: tx * tr.scale + tr.x, y: ty * tr.scale + tr.y };
+  }
+
+  function defaultLayout(){
+    // コース座標系で固定配置
+    // スマホ（ストレート版）：直線走路の中央あたりに横一列
+    // PC（オーバル版）：コース上部の待機ゾーンに横一列
+    const startY = ISMOBILE ? 206 : 78;
+    const gap = ISMOBILE ? 100 : 92;
+    const totalW = gap*(NUMS.length-1);
+    const startX = 500 - totalW/2;
+    NUMS.forEach((n,i)=>{
+      state[n] = { x: startX + i*gap, y: startY };
+    });
+  }
+
+  function clamp(v,min,max){ return Math.max(min, Math.min(max, v)); }
+
+  function renderChips(){
+    field.querySelectorAll('.chip').forEach(el=>el.remove());
+    NUMS.forEach(n=>{
+      const el = document.createElement('div');
+      el.className = 'chip c'+n;
+      el.dataset.num = n;
+      el.innerHTML = '<div class="num">'+n+'</div>';
+      field.appendChild(el);
+      positionChip(n);
+      attachDrag(el, n);
+    });
+  }
+
+  function positionChip(n){
+    const el = field.querySelector('.chip[data-num="'+n+'"]');
+    if(!el) return;
+    const p = toField(state[n].x, state[n].y);
+    el.style.left = p.x + 'px';
+    el.style.top = p.y + 'px';
+  }
+
+  function drawConnections(){
+    let svg = '';
+    connections.forEach(pair=>{
+      const [a,b] = pair.split('-').map(Number);
+      const pa = state[a], pb = state[b];
+      if(!pa || !pb) return;
+      // state は既にコース座標(viewBox)なのでそのまま使える
+      svg += `<line x1="${pa.x}" y1="${pa.y}" x2="${pb.x}" y2="${pb.y}" stroke="#071B24" stroke-width="11" stroke-linecap="round"/><line x1="${pa.x}" y1="${pa.y}" x2="${pb.x}" y2="${pb.y}" stroke="#45D9FF" stroke-width="6" stroke-linecap="round"/>`;
+    });
+    connSvg.innerHTML = svg;
+  }
+
+  function attachDrag(el, n){
+    let dragging = false;
+    let moved = false;
+    let offX=0, offY=0; // フィールドpx単位でのオフセット
+    let startClientX=0, startClientY=0;
+
+    el.addEventListener('pointerdown', (e)=>{
+      e.preventDefault();
+      if(dragging || e.isPrimary === false || e.button !== 0) return;
+      dragging = true; moved = false;
+      el.setPointerCapture(e.pointerId);
+      el.classList.add('dragging');
+      el.style.zIndex = '999'; // ドラッグ中は常に最前面
+      startClientX = e.clientX; startClientY = e.clientY;
+      const r = fieldRect();
+      const p = toField(state[n].x, state[n].y);
+      offX = (e.clientX - r.left) - p.x;
+      offY = (e.clientY - r.top) - p.y;
+    });
+
+    el.addEventListener('pointermove', (e)=>{
+      if(!dragging) return;
+      // タッチは指のブレが大きいため、タップ/ドラッグ判定のしきい値を広めにとる
+      const threshold = e.pointerType === 'touch' ? 10 : 3;
+      if(!moved && (Math.abs(e.clientX-startClientX) > threshold || Math.abs(e.clientY-startClientY) > threshold)){
+        moved = true;
+        // ドラッグが実際に始まった瞬間に、このチップが属するライン（グループ）全体を最前面に昇格させる。
+        // こうすることで、指を離す前（追従アニメーション中）から正しい重なり順で表示される。
+        touchCounter++;
+        lastTouched[n] = touchCounter;
+        applyZOrder();
+      }
+      if(!moved) return;
+      const r = fieldRect();
+      let x = (e.clientX - r.left) - offX;
+      let y = (e.clientY - r.top) - offY;
+      x = clamp(x, 20, r.width-20);
+      y = clamp(y, 20, r.height-20);
+      state[n] = toTrack(x, y);
+      keepGroupsVisible();
+      drawConnections();
+    });
+
+    function endDrag(e){
+      if(!dragging) return;
+      dragging = false;
+      el.classList.remove('dragging');
+      applyZOrder();
+      if(!moved && e.type !== 'pointercancel'){
+        handleTap(n, el);
+      }
+    }
+    el.addEventListener('pointerup', endDrag);
+    el.addEventListener('pointercancel', endDrag);
+  }
+
+  // ---- 重なり順（z-index）の管理 ----
+  // 「最後に触れた（つないだ／動かした）ライン（またはチップ）ほど手前に表示する」というルール。
+  // 1つのラインに属するチップはどれか1つでも触れれば、そのライン全体の優先度が最新になる。
+  let touchCounter = 0;
+  const lastTouched = {}; // chip番号 -> 最後に触れた時のカウンタ値
+
+  function hasOutgoingEdge(n){
+    for(const e of edgeDir.values()){ if(e.from === n) return true; }
+    return false;
+  }
+  function hasIncomingEdge(n){
+    for(const e of edgeDir.values()){ if(e.to === n) return true; }
+    return false;
+  }
+
+  function handleTap(n, el){
+    if(!connectMode) return;
+    if(firstPicked === null){
+      firstPicked = n;
+      el.classList.add('selected');
+    } else if(firstPicked === n){
+      el.classList.remove('selected');
+      firstPicked = null;
+    } else {
+      const a = Math.min(firstPicked, n), b = Math.max(firstPicked, n);
+      const key = a+'-'+b;
+      if(connections.has(key)){
+        // 既につながっている相手同士を選び直した＝解除操作なので、これは常に許可する
+        connections.delete(key);
+        edgeDir.delete(key);
+      } else {
+        // 新しくつなごうとする場合のみ、誤タップ防止のチェックを行う。
+        // ・先頭側（firstPicked）が既に別の相手へ矢印を出している場合はブロック（分岐防止）
+        // ・後続側（n）が既に別の相手から矢印を受けている場合もブロック（二重の先頭を防止）
+        if(hasOutgoingEdge(firstPicked) || hasIncomingEdge(n) || wouldCycle(firstPicked,n)){
+          announce('接続できません。分岐や輪になる接続を避け、先頭→番手の順に選んでください。');
+          field.querySelector('.chip[data-num="'+firstPicked+'"]').classList.remove('selected');
+          firstPicked = null;
+          return;
+        }
+        connections.add(key);
+        edgeDir.set(key, {from: firstPicked, to: n}); // タップした順=前(先頭)→後
+        // 新しくつないだライン（＝この2つが属することになるグループ全体）を最前面にする
+        touchCounter++;
+        lastTouched[firstPicked] = touchCounter;
+        lastTouched[n] = touchCounter;
+      }
+      field.querySelector('.chip[data-num="'+firstPicked+'"]').classList.remove('selected');
+      firstPicked = null;
+      drawConnections();
+      applyZOrder();
+      announce('接続を更新しました。先頭を動かすと後続がついてきます。');
+    }
+  }
+
+  // 現在の接続関係から「連結グループ」を求め、各グループを先頭から順に並べた配列にする
+  function getGroupsForZOrder(){
+    const outAdj = {}, incoming = {}, undirected = {};
+    NUMS.forEach(n=>{ outAdj[n]=[]; incoming[n]=0; undirected[n]=[]; });
+    edgeDir.forEach(e=>{
+      outAdj[e.from].push(e.to);
+      incoming[e.to] = (incoming[e.to]||0)+1;
+    });
+    connections.forEach(key=>{
+      const [a,b] = key.split('-').map(Number);
+      undirected[a].push(b);
+      undirected[b].push(a);
+    });
+
+    const visited = new Set();
+    const groups = [];
+    NUMS.forEach(n=>{
+      if(visited.has(n)) return;
+      // 連結成分（そのラインに属する全チップ）をたどる
+      const members = [];
+      let queue = [n]; visited.add(n);
+      while(queue.length){
+        const next = [];
+        queue.forEach(node=>{
+          members.push(node);
+          (undirected[node]||[]).forEach(m=>{ if(!visited.has(m)){ visited.add(m); next.push(m); } });
+        });
+        queue = next;
+      }
+
+      // 成分内を「先頭（他から接続されていない側）が最初」になる順番に並べる
+      const memberSet = new Set(members);
+      const localVisited = new Set();
+      const order = [];
+      let heads = members.filter(m=> incoming[m]===0);
+      if(heads.length===0) heads = [members[0]]; // 循環などの保険
+      let frontier = heads.slice();
+      frontier.forEach(m=> localVisited.add(m));
+      while(frontier.length){
+        const next = [];
+        frontier.forEach(node=>{
+          order.push(node);
+          (outAdj[node]||[]).forEach(c=>{
+            if(memberSet.has(c) && !localVisited.has(c)){ localVisited.add(c); next.push(c); }
+          });
+        });
+        frontier = next;
+      }
+      members.forEach(m=>{ if(!localVisited.has(m)) order.push(m); });
+
+      const rank = Math.max(0, ...members.map(m=> lastTouched[m] || 0));
+      groups.push({ order, rank });
+    });
+    return groups;
+  }
+
+  // 最後に触れた（＝優先度が高い）グループほど手前（z-indexが高い）になるよう計算する
+  function computeZOrder(){
+    const groups = getGroupsForZOrder();
+    groups.sort((a,b)=> b.rank - a.rank);
+    const z = {};
+    let zTop = 100;
+    groups.forEach(g=>{
+      g.order.forEach(n=>{ z[n] = zTop--; });
+    });
+    return z;
+  }
+
+  function applyZOrder(){
+    const z = computeZOrder();
+    NUMS.forEach(n=>{
+      const el = field.querySelector('.chip[data-num="'+n+'"]');
+      if(el) el.style.zIndex = z[n];
+    });
+  }
+
+  btnConnect.addEventListener('click', ()=>{
+    connectMode = !connectMode;
+    btnConnect.textContent = '🔗 ライン接続: ' + (connectMode ? 'ON' : 'OFF');
+    btnConnect.classList.toggle('primary', connectMode);
+    if(!connectMode && firstPicked !== null){
+      field.querySelector('.chip[data-num="'+firstPicked+'"]').classList.remove('selected');
+      firstPicked = null;
+    }
+  });
+
+  btnClearConn.addEventListener('click', ()=>{
+    clearSelection();
+    connections.clear();
+    edgeDir.clear();
+    drawConnections();
+    applyZOrder();
+  });
+
+  btnReset.addEventListener('click', ()=>{
+    clearSelection();
+    defaultLayout();
+    renderChips();
+    connections.clear();
+    edgeDir.clear();
+    Object.keys(lastTouched).forEach(k=> delete lastTouched[k]);
+    touchCounter = 0;
+    drawConnections();
+    applyZOrder();
+  });
+
+  let resizeTimer = null;
+  window.addEventListener('resize', ()=>{
+    // スマホはスクロール時にアドレスバーの出し入れでresizeが連発し、
+    // その都度再計算するとカクつくため、少し落ち着いてから1回だけ再計算する。
+    // （PC/スマホの判定自体は起動時に決めたまま固定で、回転しても切り替わらない）
+    clearTimeout(resizeTimer);
+    resizeTimer = setTimeout(()=>{
+      updateFieldSvgs();
+      keepGroupsVisible();
+      drawConnections();
+    }, 150);
+  });
+
+  // ---- ライン追従アニメーション ----
+  // 「ライン接続」がONの間、先頭のチップを動かすと後ろのチップが
+  // 一定の間隔を保ちながら、少し遅れてぬるっと追いかけてくる。
+  // OFFにすると、この追従は行われなくなる（それぞれ独立して動く）。
+  function chaseGapRatio(){
+    return 1.1; // 車間をチップ幅の10%に統一（PC約4px／スマホ約3px）
+  }
+  const CHASE_EASE = 0.16;     // 追いつく速さ（小さいほど、より“ぬるっと”遅れてついてくる）
+
+  // 実際に描画されているチップのサイズ(px)を取得する（PC/スマホでサイズが違うため）
+  function getChipSizePx(){
+    const el = field.querySelector('.chip');
+    return el ? el.getBoundingClientRect().width : 42;
+  }
+
+  function stepChase(){
+    if(connectMode && edgeDir.size){
+      const tr = trackRect();
+      const chipPx = getChipSizePx();
+      const gapPx = chipPx * chaseGapRatio();
+      const gap = tr.scale ? gapPx / tr.scale : gapPx;
+      let moved = false;
+      edgeDir.forEach(e=>{
+        const leader = state[e.from], follower = state[e.to];
+        if(!leader || !follower) return;
+        let tx, ty;
+        if(ISMOBILE){
+          // スマホ版：先頭が上下に動いても、常に先頭の右横（3時方向）に一定間隔で並ぶ
+          tx = leader.x + gap;
+          ty = leader.y;
+        } else {
+          // PC版：直線部分（バックストレート／ホームストレート）と
+          // コーナー部分（1-2コーナー／3-4コーナー）で追従の仕方を分ける
+          const OVAL_CENTER_Y = 430;
+          const STRAIGHT_X_MIN = 280, STRAIGHT_X_MAX = 720; // この範囲外はコーナー扱い
+          const inCorner = leader.x < STRAIGHT_X_MIN || leader.x > STRAIGHT_X_MAX;
+          if(inCorner){
+            // コーナー：直線と同じ考え方で、コースの接線方向（進行方向の後ろ側）に
+            // 固定の間隔で位置させる。これにより、直線と同様にコーナーでも追い抜きが起きない。
+            const cornerCx = leader.x < 500 ? STRAIGHT_X_MIN : STRAIGHT_X_MAX;
+            const rx = leader.x - cornerCx, ry = leader.y - OVAL_CENTER_Y;
+            const rlen = Math.hypot(rx, ry) || 0.0001;
+            // 進行方向（反時計回り）の接線ベクトル。バック/ホームストレートの
+            // 進行方向（左向き／右向き）と境目でなめらかに繋がるように向きを合わせてある。
+            const fx = ry / rlen, fy = -rx / rlen;
+            tx = leader.x - fx*gap;
+            ty = leader.y - fy*gap;
+          } else if(leader.y < OVAL_CENTER_Y){
+            // バックストレート：先頭の3時方向（右）
+            tx = leader.x + gap;
+            ty = leader.y;
+          } else {
+            // ホームストレート：先頭の9時方向（左）
+            tx = leader.x - gap;
+            ty = leader.y;
+          }
+        }
+        const distToTarget = Math.hypot(tx-follower.x, ty-follower.y);
+        if(distToTarget > 0.05){
+          follower.x += (tx - follower.x) * CHASE_EASE;
+          follower.y += (ty - follower.y) * CHASE_EASE;
+          positionChip(e.to);
+          moved = true;
+        }
+      });
+      if(moved){ keepGroupsVisible(); drawConnections(); }
+    }
+    requestAnimationFrame(stepChase);
+  }
+
+  btnCount.addEventListener('click', ()=>{
+    clearSelection();
+    const count = NUMS.length === 9 ? 7 : 9;
+    NUMS = Array.from({length:count},(_,i)=>i+1);
+    for(const [key,e] of edgeDir){
+      if(e.from > count || e.to > count){ edgeDir.delete(key); connections.delete(key); }
+    }
+    if(count === 9){
+      state[8] = {x: ISMOBILE ? 800 : 776, y: ISMOBILE ? 206 : 78};
+      state[9] = {x: ISMOBILE ? 900 : 868, y: ISMOBILE ? 206 : 78};
+    }
+    renderChips(); updateCount(); keepGroupsVisible(); drawConnections(); applyZOrder();
+    announce(count+'車に切り替えました。');
+  });
+  function validSnapshot(s){
+    if(!s || s.version !== 1 || ![7,9].includes(s.count) || typeof s.mode !== 'boolean' || !s.positions || !Array.isArray(s.edges)) return false;
+    for(let n=1;n<=s.count;n++){
+      const p=s.positions[n];
+      if(!p || !Number.isFinite(p.x) || !Number.isFinite(p.y) || Math.abs(p.x)>10000 || Math.abs(p.y)>10000) return false;
+    }
+    const out=new Map(), incoming=new Set();
+    for(const e of s.edges){
+      if(!e || !Number.isInteger(e.from) || !Number.isInteger(e.to) || e.from<1 || e.to<1 || e.from>s.count || e.to>s.count || out.has(e.from) || incoming.has(e.to)) return false;
+      out.set(e.from,e.to); incoming.add(e.to);
+    }
+    for(const n of out.keys()){
+      const seen=new Set(); let node=n;
+      while(out.has(node)){ if(seen.has(node)) return false; seen.add(node); node=out.get(node); }
+    }
+    return true;
+  }
+  btnSave.addEventListener('click', ()=>{
+    clearSelection();
+    savedLayout = {version:1,count:NUMS.length,mode:connectMode,positions:JSON.parse(JSON.stringify(state)),edges:[...edgeDir.values()].map(e=>({...e}))};
+    btnRestore.disabled=false;
+    try{ localStorage.setItem(SAVE_KEY,JSON.stringify(savedLayout)); announce('並びを保存しました。同じブラウザで次回も戻せます。'); }
+    catch{ announce('並びをこのページ内に保存しました。ブラウザ保存が使えないため、閉じると消えます。'); }
+  });
+  btnRestore.addEventListener('click', ()=>{
+    if(!validSnapshot(savedLayout)) return;
+    clearSelection();
+    NUMS=Array.from({length:savedLayout.count},(_,i)=>i+1);
+    NUMS.forEach(n=>state[n]={...savedLayout.positions[n]});
+    connections.clear(); edgeDir.clear();
+    savedLayout.edges.forEach(e=>{const key=Math.min(e.from,e.to)+'-'+Math.max(e.from,e.to); connections.add(key); edgeDir.set(key,{...e});});
+    connectMode=savedLayout.mode;
+    btnConnect.textContent='🔗 ライン接続: '+(connectMode?'ON':'OFF');
+    btnConnect.classList.toggle('primary',connectMode);
+    renderChips(); updateCount(); keepGroupsVisible(); drawConnections(); applyZOrder();
+    announce('保存した並びに戻しました。');
+  });
+  try{
+    const stored=JSON.parse(localStorage.getItem(SAVE_KEY));
+    if(validSnapshot(stored)){savedLayout=stored;btnRestore.disabled=false;}
+  } catch{}
+
+  // init
+  updateFieldSvgs();
+  defaultLayout();
+  renderChips();
+  drawConnections();
+  applyZOrder();
+  updateCount();
+  keepGroupsVisible();
+  requestAnimationFrame(stepChase);
+})();
+</script>
+</body>
+</html>
