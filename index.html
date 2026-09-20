@@ -282,7 +282,7 @@ footer.boardFooter{
     <button id="btnSave">並びの保存</button>
     <button id="btnRestore" disabled>保存した並びに戻す</button>
     <button id="btnConnect" class="primary">🔗 ライン接続: ON</button>
-    <button id="btnClearConn" class="danger">接続を全消去</button>
+    <button id="btnClearConn" class="danger">ライン接続を全消去</button>
     <button id="btnReset" class="primary">並びをリセット</button>
   </div>
   <div id="boardStatus" role="status" aria-live="polite">先頭→番手の順にタップして接続。個別に動かすときは接続OFF。</div>
@@ -683,7 +683,7 @@ footer.boardFooter{
       firstPicked = null;
       drawConnections();
       applyZOrder();
-      announce('接続を更新しました。先頭を動かすと後続がついてきます。');
+      announce('ラインを更新しました。先頭を動かすと後続がついてきます。');
     }
   }
 
