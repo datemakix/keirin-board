@@ -241,6 +241,24 @@ footer.boardFooter{
   .app{ height:auto; }
   .field-wrap{ flex:none; aspect-ratio: 1000 / 500; }
 }
+body.phone-landscape{ overflow:hidden; }
+body.phone-landscape .siteHero,
+body.phone-landscape .finishLine,
+body.phone-landscape .guide,
+body.phone-landscape .site-notes,
+body.phone-landscape .siteFooter,
+body.phone-landscape .footerBottom{ display:none; }
+body.phone-landscape .app{ position:fixed; inset:0; width:100%; height:100vh; height:100dvh; padding:env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left); }
+body.phone-landscape .field-wrap{ flex:1; min-height:0; aspect-ratio:auto; margin:4px 6px 0; border-radius:12px; }
+body.phone-landscape .boardFooter{ flex:none; padding:5px 6px; gap:0; }
+body.phone-landscape .controls{ flex-wrap:wrap; justify-content:center; gap:4px; }
+body.phone-landscape button{ font-size:10px; padding:6px 7px; white-space:nowrap; }
+body.phone-landscape .chip{ width:30px; height:30px; margin-left:-15px; margin-top:-15px; font-size:12px; border-radius:6px; }
+/* 操作結果は読み上げ可能なまま、コース用の高さを確保する。 */
+body.phone-landscape #boardStatus{ position:absolute; width:1px; height:1px; min-height:0; padding:0; overflow:hidden; clip-path:inset(50%); white-space:nowrap; }
+body.phone-portrait .app{ height:auto; }
+body.phone-portrait .field-wrap{ flex:none; aspect-ratio:1000 / 500; }
+body.phone-portrait .chip{ width:30px; height:30px; margin-left:-15px; margin-top:-15px; font-size:12px; border-radius:6px; }
 </style>
 <!-- SNSで共有したときの表示 -->
 <meta property="og:type" content="website">
@@ -249,11 +267,9 @@ footer.boardFooter{
 <meta property="og:title" content="競輪展開ボード｜TENKAI BOARD">
 <meta property="og:description" content="車番チップを動かして、競輪のラインやレース展開を整理できる無料ツール。パソコン・スマホで展開予想に使えます。">
 <meta property="og:url" content="https://tenkaiboard.com/">
-<meta property="og:image" content="https://tenkaiboard.com/ogp1.jpg">
+<meta property="og:image" content="https://tenkaiboard.com/ogp.jpg">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="競輪展開ボード｜TENKAI BOARD">
-<meta name="twitter:description" content="車番チップを動かして、競輪のラインやレース展開を整理できる無料ツール。">
-<meta name="twitter:image" content="https://tenkaiboard.com/ogp1.jpg">
+
 <!-- トップページの正式なURL -->
 <link rel="canonical" href="https://tenkaiboard.com/">
 </head>
@@ -282,7 +298,7 @@ footer.boardFooter{
     <button id="btnSave">並びの保存</button>
     <button id="btnRestore" disabled>保存した並びに戻す</button>
     <button id="btnConnect" class="primary">🔗 ライン接続: ON</button>
-    <button id="btnClearConn" class="danger">ライン接続を全消去</button>
+    <button id="btnClearConn" class="danger">接続を全消去</button>
     <button id="btnReset" class="primary">並びをリセット</button>
   </div>
   <div id="boardStatus" role="status" aria-live="polite">先頭→番手の順にタップして接続。個別に動かすときは接続OFF。</div>
@@ -359,17 +375,29 @@ footer.boardFooter{
   const btnReset = document.getElementById('btnReset');
   const legend = document.getElementById('legend');
 
-  // ---- PC / スマホの判定（幅480px以下はスマホ扱い・起動時に一度だけ判定し、以後は固定）----
+  // ---- タッチ端末の向きと画面サイズに応じて表示を切り替える ----
   // スマホ：以前の「ストレートのみ」の見た目 / PC：現行の競輪場オーバルコース
   function computeIsMobile(){
     return window.matchMedia('(max-width: 480px)').matches;
   }
-  const ISMOBILE = computeIsMobile();
-  const TRACK_H = ISMOBILE ? 500 : 710;
+  const touchLayout = () => window.matchMedia('(pointer: coarse)').matches && Math.min(window.innerWidth,window.innerHeight) <= 600;
+  const landscapeLayout = () => touchLayout() && window.innerWidth > window.innerHeight;
+  const straightLayout = () => !landscapeLayout() && (touchLayout() || computeIsMobile());
+  let ISMOBILE = straightLayout();
+  let TRACK_H = ISMOBILE ? 500 : 710;
+  let TRACK_TOP = landscapeLayout() ? 150 : 0;
+  function updateLayoutClasses(){
+    document.body.classList.toggle('phone-landscape',landscapeLayout());
+    document.body.classList.toggle('phone-portrait',ISMOBILE);
+  }
+  updateLayoutClasses();
+  function convertPosition(p, toStraight){
+    return {x:p.x,y:toStraight ? (p.y-170)*500/520 : 170+p.y*520/500};
+  }
 
   function drawTrack(){
-    trackSvg.setAttribute('viewBox', `0 0 1000 ${TRACK_H}`);
-    connSvg.setAttribute('viewBox', `0 0 1000 ${TRACK_H}`);
+    trackSvg.setAttribute('viewBox', `0 ${TRACK_TOP} 1000 ${TRACK_H-TRACK_TOP}`);
+    connSvg.setAttribute('viewBox', `0 ${TRACK_TOP} 1000 ${TRACK_H-TRACK_TOP}`);
 
     if(ISMOBILE){
     // ---- draw straight track（以前のストレートのみのシンプル版・上下の余白を半分に詰めた版）----
@@ -499,8 +527,8 @@ footer.boardFooter{
   // 縦横比(1000:TRACK_H)を保ったまま中央に収まる、実際の走路の描画領域を返す
   function trackRect(){
     const r = fieldRect();
-    const scale = Math.min(r.width/1000, r.height/TRACK_H);
-    const w = 1000*scale, h = TRACK_H*scale;
+    const scale = Math.min(r.width/1000, r.height/(TRACK_H-TRACK_TOP));
+    const w = 1000*scale, h = (TRACK_H-TRACK_TOP)*scale;
     const x = (r.width - w)/2, y = (r.height - h)/2;
     return { x, y, width:w, height:h, scale };
   }
@@ -521,18 +549,18 @@ footer.boardFooter{
   // こうすることで、拡大・縮小してもコース上の相対位置がずれない。
   function toTrack(fx, fy){
     const tr = trackRect();
-    return { x: (fx - tr.x) / tr.scale, y: (fy - tr.y) / tr.scale };
+    return { x: (fx - tr.x) / tr.scale, y: (fy - tr.y) / tr.scale + TRACK_TOP };
   }
   function toField(tx, ty){
     const tr = trackRect();
-    return { x: tx * tr.scale + tr.x, y: ty * tr.scale + tr.y };
+    return { x: tx * tr.scale + tr.x, y: (ty-TRACK_TOP) * tr.scale + tr.y };
   }
 
   function defaultLayout(){
     // コース座標系で固定配置
     // スマホ（ストレート版）：直線走路の中央あたりに横一列
     // PC（オーバル版）：コース上部の待機ゾーンに横一列
-    const startY = ISMOBILE ? 206 : 78;
+    const startY = ISMOBILE ? 206 : (TRACK_TOP ? 220 : 78);
     const gap = ISMOBILE ? 100 : 92;
     const totalW = gap*(NUMS.length-1);
     const startX = 500 - totalW/2;
@@ -683,7 +711,7 @@ footer.boardFooter{
       firstPicked = null;
       drawConnections();
       applyZOrder();
-      announce('ラインを更新しました。先頭を動かすと後続がついてきます。');
+      announce('接続を更新しました。先頭を動かすと後続がついてきます。');
     }
   }
 
@@ -797,9 +825,19 @@ footer.boardFooter{
   window.addEventListener('resize', ()=>{
     // スマホはスクロール時にアドレスバーの出し入れでresizeが連発し、
     // その都度再計算するとカクつくため、少し落ち着いてから1回だけ再計算する。
-    // （PC/スマホの判定自体は起動時に決めたまま固定で、回転しても切り替わらない）
+    // 回転後は表示モードとチップ座標も更新する。
     clearTimeout(resizeTimer);
     resizeTimer = setTimeout(()=>{
+      const nextMobile = straightLayout();
+      if(nextMobile !== ISMOBILE){
+        clearSelection();
+        NUMS.forEach(n=>{ state[n] = convertPosition(state[n],nextMobile); });
+      }
+      ISMOBILE = nextMobile;
+      TRACK_H = ISMOBILE ? 500 : 710;
+      TRACK_TOP = landscapeLayout() ? 150 : 0;
+      updateLayoutClasses();
+      drawTrack();
       updateFieldSvgs();
       keepGroupsVisible();
       drawConnections();
@@ -884,8 +922,8 @@ footer.boardFooter{
       if(e.from > count || e.to > count){ edgeDir.delete(key); connections.delete(key); }
     }
     if(count === 9){
-      state[8] = {x: ISMOBILE ? 800 : 776, y: ISMOBILE ? 206 : 78};
-      state[9] = {x: ISMOBILE ? 900 : 868, y: ISMOBILE ? 206 : 78};
+      state[8] = {x: ISMOBILE ? 800 : 776, y: ISMOBILE ? 206 : (TRACK_TOP ? 220 : 78)};
+      state[9] = {x: ISMOBILE ? 900 : 868, y: ISMOBILE ? 206 : (TRACK_TOP ? 220 : 78)};
     }
     renderChips(); updateCount(); keepGroupsVisible(); drawConnections(); applyZOrder();
     announce(count+'車に切り替えました。');
@@ -909,7 +947,7 @@ footer.boardFooter{
   }
   btnSave.addEventListener('click', ()=>{
     clearSelection();
-    savedLayout = {version:1,count:NUMS.length,mode:connectMode,positions:JSON.parse(JSON.stringify(state)),edges:[...edgeDir.values()].map(e=>({...e}))};
+    savedLayout = {version:1,count:NUMS.length,mode:connectMode,straight:ISMOBILE,positions:JSON.parse(JSON.stringify(state)),edges:[...edgeDir.values()].map(e=>({...e}))};
     btnRestore.disabled=false;
     try{ localStorage.setItem(SAVE_KEY,JSON.stringify(savedLayout)); announce('並びを保存しました。同じブラウザで次回も戻せます。'); }
     catch{ announce('並びをこのページ内に保存しました。ブラウザ保存が使えないため、閉じると消えます。'); }
@@ -919,6 +957,10 @@ footer.boardFooter{
     clearSelection();
     NUMS=Array.from({length:savedLayout.count},(_,i)=>i+1);
     NUMS.forEach(n=>state[n]={...savedLayout.positions[n]});
+    const savedStraight = typeof savedLayout.straight === 'boolean' ? savedLayout.straight : (touchLayout() || computeIsMobile());
+    if(savedStraight !== ISMOBILE){
+      NUMS.forEach(n=>{ state[n] = convertPosition(state[n],ISMOBILE); });
+    }
     connections.clear(); edgeDir.clear();
     savedLayout.edges.forEach(e=>{const key=Math.min(e.from,e.to)+'-'+Math.max(e.from,e.to); connections.add(key); edgeDir.set(key,{...e});});
     connectMode=savedLayout.mode;
